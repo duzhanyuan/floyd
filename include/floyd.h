@@ -30,6 +30,7 @@ class Floyd {
 
   // nodes info
   static Mutex nodes_mutex;
+  // store the whole nodes info
   static std::vector<NodeInfo*> nodes_info;
   static DbBackend* db;
   static floyd::raft::RaftConsensus* raft_con;
@@ -49,10 +50,7 @@ class Floyd {
   const Options options_;
   // FloydLiveThread
   FloydMetaThread* floydmeta_;
-  // FloydWorkerThread* worker_;
   FloydWorkerThread* floydworker_;
-  // HeartbeatThread
-  FloydHeartBeatThread* heartbeat_;
 
   // Status UpHoldWorkerCliConn(NodeInfo *ni);
   NodeInfo* GetLeaderInfo();
