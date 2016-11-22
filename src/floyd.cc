@@ -539,6 +539,7 @@ Status Floyd::Stop() {
   std::vector<NodeInfo*>().swap(nodes_info);
   return Status::OK();
 }
+
 Status Floyd::Erase() {
   Stop();
   std::string path = options_.data_path;
@@ -549,4 +550,5 @@ Status Floyd::Erase() {
   slash::DeleteDir(path);
   return Status::OK();
 }
+
 }

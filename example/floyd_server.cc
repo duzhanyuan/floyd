@@ -7,6 +7,7 @@ FloydServer::FloydServerConn::FloydServerConn(int fd, std::string &ip_port,
 }
 
 FloydServer::FloydServerConn::~FloydServerConn() {}
+
 pink::Status FloydServer::FloydServerConn::BuildObuf() {
   log_info("begin buildobuf");
   uint32_t u;

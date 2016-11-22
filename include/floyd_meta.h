@@ -1,5 +1,5 @@
-#ifndef __FLOYD_META_H__
-#define __FLOYD_META_H__
+#ifndef INCLUDE_FLOYD_META_H_
+#define INCLUDE_FLOYD_META_H_
 
 #include "holy_thread.h"
 #include "pb_conn.h"
@@ -10,10 +10,13 @@
 #include "floyd_worker.h"
 #include "status.h"
 #include "slice.h"
+
 namespace floyd {
+
 class NodeInfo;
 class FloydMetaCliConn;
 typedef std::pair<std::string, int> NodeAddr;
+
 struct NodeInfo {
   std::string ip;
   int port;
@@ -60,5 +63,6 @@ class FloydMetaThread : public pink::HolyThread<FloydMetaConn> {
   explicit FloydMetaThread(int port);
   virtual ~FloydMetaThread();
 };
-}
-#endif
+
+}  // namespace floyd
+#endif  // INCLUDE_FLOYD_META_H_

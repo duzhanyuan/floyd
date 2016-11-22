@@ -119,6 +119,7 @@ private:
   bool voteable_;
 	uint64_t vote_target_term_;
 	uint64_t vote_target_index_;
+
 	class PeerThread : public pink::Thread {
 	public:
 		PeerThread(RaftConsensus* raft_con, NodeInfo* ni);
@@ -145,6 +146,7 @@ private:
 		bool RequestVote();
 		bool AppendEntries();
 	};
+
 	std::vector<PeerThread*> peers_;
 	struct timespec period_;
 	void Append(std::vector<Log::Entry*>& entries);

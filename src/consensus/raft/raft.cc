@@ -9,6 +9,7 @@
 #include "logger.h"
 
 namespace floyd {
+
 namespace raft {
 
 RaftConsensus::RaftConsensus(const floyd::Options& options)
