@@ -6,7 +6,6 @@
 #include "logger.h"
 
 namespace floyd {
-namespace raft {
 
 StateMachine::StateMachine(RaftConsensus* raft_con)
     : raft_con_(raft_con),
@@ -249,5 +248,4 @@ void* StateMachine::ApplyThread::ThreadMain() {
   return NULL;
 }
 
-}  // namespace raft
 }  // namespace floyd

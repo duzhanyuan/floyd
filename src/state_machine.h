@@ -10,7 +10,6 @@
 #include "pink_thread.h"
 
 namespace floyd {
-namespace raft {
 
 class RaftConsensus;
 
@@ -77,7 +76,6 @@ private:
   bool exiting_;
 };
 
-}
 }
 
 #endif

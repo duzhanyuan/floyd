@@ -9,9 +9,9 @@
 #include "command.pb.h"
 #include "log.h"
 #include "state_machine.h"
+#include "peer_thread.h"
 
 namespace floyd {
-namespace raft {
 
 class RaftConsensus {
 public:
@@ -120,32 +120,6 @@ private:
 	uint64_t vote_target_term_;
 	uint64_t vote_target_index_;
 
-	class PeerThread : public pink::Thread {
-	public:
-		PeerThread(RaftConsensus* raft_con, NodeInfo* ni);
-		~PeerThread();
-
-		virtual void* ThreadMain();
-		bool HaveVote();
-		uint64_t GetLastAgreeIndex();
-		void BeginRequestVote();
-		void BeginLeaderShip();
-		void set_next_index(uint64_t next_index);
-		uint64_t get_next_index();
-
-	private:
-		RaftConsensus* raft_con_;
-		NodeInfo* ni_;
-		bool have_vote_;
-		bool vote_done_;
-		uint64_t next_index_;
-		uint64_t last_agree_index_;
-		struct timespec next_heartbeat_time_;
-    bool exiting_;
-		
-		bool RequestVote();
-		bool AppendEntries();
-	};
 
 	std::vector<PeerThread*> peers_;
 	struct timespec period_;
@@ -177,7 +151,6 @@ private:
 	StateMachine* sm_;
 };
 
-}
 }
 
 #endif

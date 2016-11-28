@@ -15,11 +15,13 @@ OUTPUT = ./output
 INCLUDE_PATH = -I../include/ \
                      -I../src/ \
 			   -I$(THIRD_PATH)/leveldb/include/ \
+			   -I$(THIRD_PATH)/pink/ \
 			   -I$(THIRD_PATH)/pink/output/include/
 
 LIB_PATH = -L../ \
 		   -L../output/lib/ \
 		   -L$(THIRD_PATH)/pink/output/lib/  \
+		   -L$(THIRD_PATH)/pink/  \
 		   -L$(THIRD_PATH)/leveldb/
 
 LIBS = -lpthread \

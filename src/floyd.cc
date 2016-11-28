@@ -8,7 +8,7 @@ namespace floyd {
 
 Mutex Floyd::nodes_mutex;
 std::vector<NodeInfo*> Floyd::nodes_info;
-DbBackend* Floyd::db;
+LeveldbBackend* Floyd::db;
 floyd::raft::RaftConsensus* Floyd::raft_con;
 
 Floyd::Floyd(const Options& options) : options_(options) {

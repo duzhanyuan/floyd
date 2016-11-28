@@ -47,4 +47,5 @@ class FloydWorkerThread : public pink::HolyThread<FloydWorkerConn> {
   virtual ~FloydWorkerThread();
 };
 }
+
 #endif

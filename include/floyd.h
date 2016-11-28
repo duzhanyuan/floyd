@@ -32,7 +32,7 @@ class Floyd {
   static Mutex nodes_mutex;
   // store the whole nodes info
   static std::vector<NodeInfo*> nodes_info;
-  static DbBackend* db;
+  static LeveldbBackend* db;
   static floyd::raft::RaftConsensus* raft_con;
   Status ChaseRaftLog(floyd::raft::RaftConsensus* raft_con);
   Status DirtyRead(const std::string& key, std::string& value);
