@@ -7,3 +7,6 @@
 [submodule "third/leveldb"]
 	path = third/leveldb
 	url = git@github.com:google/leveldb.git
+[submodule "third/glog"]
+	path = third/glog
+	url = git@github.com:Qihoo360/glog.git

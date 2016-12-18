@@ -1,65 +1,49 @@
-#ifndef __FLOYD_H__
-#define __FLOYD_H__
+#ifndef FLOYD_INCLUDE_FLOYD_H_
+#define FLOYD_INCLUDE_FLOYD_H_
 
-#include "floyd_define.h"
-#include "floyd_util.h"
-#include "floyd_mutex.h"
-#include "floyd_hb.h"
-#include "floyd_meta.h"
-#include "floyd_worker.h"
-#include "floyd_db.h"
-#include "raft/raft.h"
-#include "floyd_rpc.h"
+#include <string.h>
+#include <vector>
+
+#include "third/pink/include/pink_thread.h"
+#include "third/slash/include/slash_status.h"
+#include "third/pink/include/bg_thread.h"
 
 namespace floyd {
 
+typedef slash::Status Status;
+
+class Binlog;
+class Node;
+
 class Floyd {
  public:
-  Floyd(const Options& options);
-  virtual ~Floyd();
+  Floyd();
+  ~Floyd();
+  Status Write(const std::string &key, const std::string &value);
+  Status Read(const std::string &key, std::string *value);
 
-  Status Start();
+  Status RunRaft();
 
-  /*
-   * Normal start can't handle read/write requests until a leader is elected.
-   * If you are not building a cluster,time spent for election will be a
-   * waste.Use SingleStart then.
-   * ATTENTION! DO NOT USE IT IN WHENING CONNECTIONG TO A CLUSTER.
-   */
-  Status SingleStart();
-
-  // nodes info
-  static Mutex nodes_mutex;
-  // store the whole nodes info
-  static std::vector<NodeInfo*> nodes_info;
-  static LeveldbBackend* db;
-  static floyd::raft::RaftConsensus* raft_con;
-  Status ChaseRaftLog(floyd::raft::RaftConsensus* raft_con);
-  Status DirtyRead(const std::string& key, std::string& value);
-  Status DirtyReadAll(std::map<std::string, std::string>& kvMap);
-  Status DirtyWrite(const std::string& key, const std::string& value);
-  Status Write(const std::string& key, const std::string& value);
-  Status Read(const std::string& key, std::string& value);
-  Status ReadAll(std::map<std::string, std::string>& kvMap);
-  Status TryLock(const std::string& key);
-  Status UnLock(const std::string& key);
-  Status Stop();
-  Status Erase();
+  std::vector<Node> nodes;
 
  private:
-  const Options options_;
-  // FloydLiveThread
-  FloydMetaThread* floydmeta_;
-  FloydWorkerThread* floydworker_;
+  void TryBeLeader();
+  void RequestVote();
+  void AppendEntries();
 
-  // Status UpHoldWorkerCliConn(NodeInfo *ni);
-  NodeInfo* GetLeaderInfo();
-  bool IsLeader();
-  Status AddNodeFromMetaRes(meta::MetaRes* meta_res,
-                            std::vector<NodeInfo*>* nis);
-  Status FetchRemoteMap(const std::string& ip, const int port,
-                        std::vector<NodeInfo*>* nis);
-  Status MergeRemoteMap(const std::string& ip, const int port);
+  enum State {
+    kFollower = 0,
+    kCandidate = 1,
+    kLeader = 2,
+  };
+
+  State state_;
+  BGThread *heart_beat_;
+  leveldb::Leveldb *db_;
+  Binlog binlog_;
+
 };
-}
-#endif
+
+}  // namespace floyd
+
+#endif  // FLOYD_INCLUDE_FLOYD_H_
