@@ -7,6 +7,8 @@
 #include "third/pink/include/pink_thread.h"
 #include "third/slash/include/slash_status.h"
 #include "third/pink/include/bg_thread.h"
+#include "third/leveldb/include/leveldb/db.h"
+#include "third/slash/include/slash_binlog.h"
 
 namespace floyd {
 
@@ -27,6 +29,7 @@ class Floyd {
   std::vector<Node> nodes;
 
  private:
+
   void TryBeLeader();
   void RequestVote();
   void AppendEntries();
@@ -38,9 +41,12 @@ class Floyd {
   };
 
   State state_;
-  BGThread *heart_beat_;
-  leveldb::Leveldb *db_;
-  Binlog binlog_;
+  pink::BGThread *heart_beat_;
+  leveldb::DB *db_;
+  slash::Binlog *binlog_writer;
+  slash::Binlog *binlog_reader;
+  // FloydCli *fcli_;
+
 
 };
 

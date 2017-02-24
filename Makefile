@@ -13,24 +13,21 @@ THIRD_PATH = ./third
 OUTPUT = ./output
 
 INCLUDE_PATH = -I./ \
-			   -I$(THIRD_PATH)/glog/src/ \
 				 -I$(THIRD_PATH)/leveldb/ \
 			   -I$(THIRD_PATH)/slash/output/ \
 			   -I$(THIRD_PATH)/pink/output/
 
 LIB_PATH = -L./ \
 		   -L$(THIRD_PATH)/slash/output/lib/ \
+			 -L$(THIRD_PATH)/leveldb/out-static/ \
 		   -L$(THIRD_PATH)/pink/output/lib/ \
-		   -L$(THIRD_PATH)/glog/.libs/
 
 
 LIBS = -lpthread \
-	   -lglog \
 		 -lleveldb \
 	   -lslash \
 		 -lpink
 
-GLOG = $(THIRD_PATH)/glog/.libs/libglog.so.0
 PINK = $(THIRD_PATH)/pink/output/lib/libpink.a
 SLASH = $(THIRD_PATH)/slash/output/lib/libslash.a
 
@@ -44,25 +41,10 @@ OBJS = $(patsubst %.cc,%.o,$(BASE_OBJS))
 
 
 all: $(OBJECT)
-	@echo "UNAME    : $(UNAME)"
-	@echo "SO_DIR   : $(SO_DIR)"
-	@echo "TOOLS_DIR: $(TOOLS_DIR)"
-	rm -rf $(OUTPUT)
-	mkdir $(OUTPUT)
-	mkdir $(OUTPUT)/bin
-	cp -r ./conf $(OUTPUT)/
-	mkdir $(OUTPUT)/lib
-	cp -r $(SO_DIR)/*  $(OUTPUT)/lib
-	cp $(OBJECT) $(OUTPUT)/bin/
-	mkdir $(OUTPUT)/tools
-	if [ -d $(TOOLS_DIR) ]; then \
-		cp -r $(TOOLS_DIR)/* $(OUTPUT)/tools/; \
-	fi
-	rm -rf $(OBJECT)
 	@echo "Success, go, go, go..."
 
 
-$(OBJECT): $(GLOG) $(PINK) $(SLASH) $(OBJS)
+$(OBJECT): $(PINK) $(SLASH) $(OBJS)
 	$(CXX) $(CXXFLAGS) -o $@ $(OBJS) $(INCLUDE_PATH) $(LIB_PATH)  $(LFLAGS) $(LIBS) 
 
 $(SLASH):
@@ -77,11 +59,9 @@ $(OBJS): %.o : %.cc
 $(TOBJS): %.o : %.cc
 	$(CXX) $(CXXFLAGS) -c $< -o $@ $(INCLUDE_PATH) 
 
-$(GLOG):
-	cd $(THIRD_PATH)/glog; if [ ! -f ./Makefile ]; then ./configure; fi; make; echo '*' > $(CURDIR)/third/glog/.gitignore; cp $(CURDIR)/third/glog/.libs/libglog.so.0 $(SO_DIR);
-	
 clean: 
 	rm -rf $(SRC_DIR)/*.o
+	rm -rf $(OBJECT)
 	rm -rf $(OUTPUT)/*
 	rm -rf $(OUTPUT)
 
