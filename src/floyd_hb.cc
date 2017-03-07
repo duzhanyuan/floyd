@@ -51,6 +51,8 @@ void FloydHeartBeatThread::HeartBeat() {
           (*iter)->mcc = NULL;
           continue;
         }
+        (*iter)->mcc->set_send_timeout(1000);
+        (*iter)->mcc->set_recv_timeout(1000);
       }
       meta.set_t(meta::Meta::PING);
       meta::Meta_Node* node = meta.add_nodes();

@@ -398,6 +398,8 @@ Status Floyd::FetchRemoteMap(const std::string& ip, const int port,
   // todo change status
   ret = ni->mcc->Connect();
   if (ret.ok()) {
+    ni->mcc->set_send_timeout(1000);
+    ni->mcc->set_recv_timeout(1000);
     meta::Meta meta;
     meta.set_t(meta::Meta::NODE);
     std::vector<NodeInfo*>::iterator iter = Floyd::nodes_info.begin();
