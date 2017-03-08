@@ -9,6 +9,7 @@
 #include "floyd_util.h"
 #include "floyd_worker.h"
 #include "status.h"
+#include "floyd_mutex.h"
 #include "slice.h"
 namespace floyd {
 class NodeInfo;
@@ -18,8 +19,11 @@ struct NodeInfo {
   std::string ip;
   int port;
   time_t last_ping;
+
+
   FloydMetaCliConn* mcc;
   FloydWorkerCliConn* dcc;
+  Mutex dcc_mutex;
 
   NodeInfo(const std::string& ip, const int port);
 
