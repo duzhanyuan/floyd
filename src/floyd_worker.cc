@@ -37,6 +37,7 @@ FloydWorkerConn::~FloydWorkerConn() {}
 
 int FloydWorkerConn::DealMessage() {
   if (!command_.ParseFromArray(rbuf_ + 4, header_len_)) {
+    LOG_DEBUG("WorkerConn::DealMessage ParseFromArray failed");
     return -1;
   }
   command_res_.Clear();
@@ -184,8 +185,7 @@ int FloydWorkerConn::DealMessage() {
       set_is_reply(true);
       command::CommandRes_RaftStageRes* rsr =
           new command::CommandRes_RaftStageRes();
-      rsr->set_commitindex(Floyd::raft_->GetCommitIndex());
-      rsr->set_term(Floyd::raft_->GetCurrentTerm());
+      Floyd::raft_->HandleGetServerStatus(*rsr);
       command_res_.set_type(command::CommandRes::SynRaftStage);
       command_res_.set_allocated_raftstage(rsr);
       break;
@@ -207,13 +207,17 @@ FloydWorkerThread::~FloydWorkerThread() {}
 
 // Only connection from other node should be accepted
 bool FloydWorkerThread::AccessHandle(std::string& ip_port) {
+  LOG_DEBUG("WorkerThread::AccessHandle start check(%s)", ip_port.c_str());
   MutexLock l(&Floyd::nodes_mutex);
   for (auto it = Floyd::nodes_info.begin(); it != Floyd::nodes_info.end(); it++) {
     if (ip_port.find((*it)->ip) != std::string::npos) {
+      LOG_DEBUG("WorkerThread::AccessHandle ok, with a node(%s:%d)",
+                (*it)->ip.c_str(), (*it)->port);
       return true;
     }
   }
+  LOG_DEBUG("WorkerThread::AccessHandle failed");
   return false;
 }
 
-}
+} // namespace floyd
