@@ -36,34 +36,53 @@ void protobuf_ShutdownFile_floyd_2eproto();
 
 class Entry;
 class CmdRequest;
-class CmdRequest_Kv;
-class CmdRequest_User;
 class CmdRequest_RequestVote;
 class CmdRequest_AppendEntries;
+class CmdRequest_KvRequest;
+class CmdRequest_LockRequest;
 class CmdRequest_ServerStatus;
 class CmdResponse;
-class CmdResponse_Kv;
-class CmdResponse_Kvs;
+class CmdResponse_RequestVoteResponse;
+class CmdResponse_AppendEntriesResponse;
+class CmdResponse_KvResponse;
 class CmdResponse_ServerStatus;
-class CmdResponse_RequestVote;
-class CmdResponse_AppendEntries;
+class Lock;
 
+enum Entry_OpType {
+  Entry_OpType_kRead = 0,
+  Entry_OpType_kWrite = 1,
+  Entry_OpType_kDelete = 2,
+  Entry_OpType_kTryLock = 4,
+  Entry_OpType_kUnLock = 5
+};
+bool Entry_OpType_IsValid(int value);
+const Entry_OpType Entry_OpType_OpType_MIN = Entry_OpType_kRead;
+const Entry_OpType Entry_OpType_OpType_MAX = Entry_OpType_kUnLock;
+const int Entry_OpType_OpType_ARRAYSIZE = Entry_OpType_OpType_MAX + 1;
+
+const ::google::protobuf::EnumDescriptor* Entry_OpType_descriptor();
+inline const ::std::string& Entry_OpType_Name(Entry_OpType value) {
+  return ::google::protobuf::internal::NameOfEnum(
+    Entry_OpType_descriptor(), value);
+}
+inline bool Entry_OpType_Parse(
+    const ::std::string& name, Entry_OpType* value) {
+  return ::google::protobuf::internal::ParseNamedEnum<Entry_OpType>(
+    Entry_OpType_descriptor(), name, value);
+}
 enum Type {
-  Read = 0,
-  ReadAll = 1,
-  DirtyWrite = 2,
-  Write = 3,
-  Delete = 4,
-  TryLock = 5,
-  UnLock = 6,
-  DeleteUser = 7,
-  RequestVote = 8,
-  AppendEntries = 9,
-  ServerStatus = 10
+  kRead = 0,
+  kWrite = 1,
+  kDelete = 3,
+  kTryLock = 5,
+  kUnLock = 6,
+  kRequestVote = 8,
+  kAppendEntries = 9,
+  kServerStatus = 10
 };
 bool Type_IsValid(int value);
-const Type Type_MIN = Read;
-const Type Type_MAX = ServerStatus;
+const Type Type_MIN = kRead;
+const Type Type_MAX = kServerStatus;
 const int Type_ARRAYSIZE = Type_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* Type_descriptor();
@@ -79,11 +98,12 @@ inline bool Type_Parse(
 enum StatusCode {
   kOk = 0,
   kNotFound = 1,
-  kError = 2
+  kError = 2,
+  kLocked = 3
 };
 bool StatusCode_IsValid(int value);
 const StatusCode StatusCode_MIN = kOk;
-const StatusCode StatusCode_MAX = kError;
+const StatusCode StatusCode_MAX = kLocked;
 const int StatusCode_ARRAYSIZE = StatusCode_MAX + 1;
 
 const ::google::protobuf::EnumDescriptor* StatusCode_descriptor();
@@ -150,7 +170,41 @@ class Entry : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
+  typedef Entry_OpType OpType;
+  static const OpType kRead = Entry_OpType_kRead;
+  static const OpType kWrite = Entry_OpType_kWrite;
+  static const OpType kDelete = Entry_OpType_kDelete;
+  static const OpType kTryLock = Entry_OpType_kTryLock;
+  static const OpType kUnLock = Entry_OpType_kUnLock;
+  static inline bool OpType_IsValid(int value) {
+    return Entry_OpType_IsValid(value);
+  }
+  static const OpType OpType_MIN =
+    Entry_OpType_OpType_MIN;
+  static const OpType OpType_MAX =
+    Entry_OpType_OpType_MAX;
+  static const int OpType_ARRAYSIZE =
+    Entry_OpType_OpType_ARRAYSIZE;
+  static inline const ::google::protobuf::EnumDescriptor*
+  OpType_descriptor() {
+    return Entry_OpType_descriptor();
+  }
+  static inline const ::std::string& OpType_Name(OpType value) {
+    return Entry_OpType_Name(value);
+  }
+  static inline bool OpType_Parse(const ::std::string& name,
+      OpType* value) {
+    return Entry_OpType_Parse(name, value);
+  }
+
   // accessors -------------------------------------------------------
+
+  // required .floyd.Entry.OpType optype = 1;
+  inline bool has_optype() const;
+  inline void clear_optype();
+  static const int kOptypeFieldNumber = 1;
+  inline ::floyd::Entry_OpType optype() const;
+  inline void set_optype(::floyd::Entry_OpType value);
 
   // required uint64 term = 2;
   inline bool has_term() const;
@@ -159,112 +213,22 @@ class Entry : public ::google::protobuf::Message {
   inline ::google::protobuf::uint64 term() const;
   inline void set_term(::google::protobuf::uint64 value);
 
-  // optional bytes cmd = 3;
-  inline bool has_cmd() const;
-  inline void clear_cmd();
-  static const int kCmdFieldNumber = 3;
-  inline const ::std::string& cmd() const;
-  inline void set_cmd(const ::std::string& value);
-  inline void set_cmd(const char* value);
-  inline void set_cmd(const void* value, size_t size);
-  inline ::std::string* mutable_cmd();
-  inline ::std::string* release_cmd();
-  inline void set_allocated_cmd(::std::string* cmd);
-
-  // @@protoc_insertion_point(class_scope:floyd.Entry)
- private:
-  inline void set_has_term();
-  inline void clear_has_term();
-  inline void set_has_cmd();
-  inline void clear_has_cmd();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::uint64 term_;
-  ::std::string* cmd_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-
-  friend void  protobuf_AddDesc_floyd_2eproto();
-  friend void protobuf_AssignDesc_floyd_2eproto();
-  friend void protobuf_ShutdownFile_floyd_2eproto();
-
-  void InitAsDefaultInstance();
-  static Entry* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CmdRequest_Kv : public ::google::protobuf::Message {
- public:
-  CmdRequest_Kv();
-  virtual ~CmdRequest_Kv();
-
-  CmdRequest_Kv(const CmdRequest_Kv& from);
-
-  inline CmdRequest_Kv& operator=(const CmdRequest_Kv& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdRequest_Kv& default_instance();
-
-  void Swap(CmdRequest_Kv* other);
-
-  // implements Message ----------------------------------------------
-
-  CmdRequest_Kv* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdRequest_Kv& from);
-  void MergeFrom(const CmdRequest_Kv& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required bytes key = 1;
+  // required string key = 3;
   inline bool has_key() const;
   inline void clear_key();
-  static const int kKeyFieldNumber = 1;
+  static const int kKeyFieldNumber = 3;
   inline const ::std::string& key() const;
   inline void set_key(const ::std::string& value);
   inline void set_key(const char* value);
-  inline void set_key(const void* value, size_t size);
+  inline void set_key(const char* value, size_t size);
   inline ::std::string* mutable_key();
   inline ::std::string* release_key();
   inline void set_allocated_key(::std::string* key);
 
-  // optional bytes value = 2;
+  // optional bytes value = 4;
   inline bool has_value() const;
   inline void clear_value();
-  static const int kValueFieldNumber = 2;
+  static const int kValueFieldNumber = 4;
   inline const ::std::string& value() const;
   inline void set_value(const ::std::string& value);
   inline void set_value(const char* value);
@@ -273,124 +237,58 @@ class CmdRequest_Kv : public ::google::protobuf::Message {
   inline ::std::string* release_value();
   inline void set_allocated_value(::std::string* value);
 
-  // @@protoc_insertion_point(class_scope:floyd.CmdRequest.Kv)
+  // optional bytes holder = 5;
+  inline bool has_holder() const;
+  inline void clear_holder();
+  static const int kHolderFieldNumber = 5;
+  inline const ::std::string& holder() const;
+  inline void set_holder(const ::std::string& value);
+  inline void set_holder(const char* value);
+  inline void set_holder(const void* value, size_t size);
+  inline ::std::string* mutable_holder();
+  inline ::std::string* release_holder();
+  inline void set_allocated_holder(::std::string* holder);
+
+  // optional uint64 lease_end = 6;
+  inline bool has_lease_end() const;
+  inline void clear_lease_end();
+  static const int kLeaseEndFieldNumber = 6;
+  inline ::google::protobuf::uint64 lease_end() const;
+  inline void set_lease_end(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:floyd.Entry)
  private:
+  inline void set_has_optype();
+  inline void clear_has_optype();
+  inline void set_has_term();
+  inline void clear_has_term();
   inline void set_has_key();
   inline void clear_has_key();
   inline void set_has_value();
   inline void clear_has_value();
+  inline void set_has_holder();
+  inline void clear_has_holder();
+  inline void set_has_lease_end();
+  inline void clear_has_lease_end();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
+  ::google::protobuf::uint64 term_;
   ::std::string* key_;
   ::std::string* value_;
+  ::std::string* holder_;
+  ::google::protobuf::uint64 lease_end_;
+  int optype_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(6 + 31) / 32];
 
   friend void  protobuf_AddDesc_floyd_2eproto();
   friend void protobuf_AssignDesc_floyd_2eproto();
   friend void protobuf_ShutdownFile_floyd_2eproto();
 
   void InitAsDefaultInstance();
-  static CmdRequest_Kv* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CmdRequest_User : public ::google::protobuf::Message {
- public:
-  CmdRequest_User();
-  virtual ~CmdRequest_User();
-
-  CmdRequest_User(const CmdRequest_User& from);
-
-  inline CmdRequest_User& operator=(const CmdRequest_User& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdRequest_User& default_instance();
-
-  void Swap(CmdRequest_User* other);
-
-  // implements Message ----------------------------------------------
-
-  CmdRequest_User* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdRequest_User& from);
-  void MergeFrom(const CmdRequest_User& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required bytes ip = 1;
-  inline bool has_ip() const;
-  inline void clear_ip();
-  static const int kIpFieldNumber = 1;
-  inline const ::std::string& ip() const;
-  inline void set_ip(const ::std::string& value);
-  inline void set_ip(const char* value);
-  inline void set_ip(const void* value, size_t size);
-  inline ::std::string* mutable_ip();
-  inline ::std::string* release_ip();
-  inline void set_allocated_ip(::std::string* ip);
-
-  // required int32 port = 2;
-  inline bool has_port() const;
-  inline void clear_port();
-  static const int kPortFieldNumber = 2;
-  inline ::google::protobuf::int32 port() const;
-  inline void set_port(::google::protobuf::int32 value);
-
-  // @@protoc_insertion_point(class_scope:floyd.CmdRequest.User)
- private:
-  inline void set_has_ip();
-  inline void clear_has_ip();
-  inline void set_has_port();
-  inline void clear_has_port();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::std::string* ip_;
-  ::google::protobuf::int32 port_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-
-  friend void  protobuf_AddDesc_floyd_2eproto();
-  friend void protobuf_AssignDesc_floyd_2eproto();
-  friend void protobuf_ShutdownFile_floyd_2eproto();
-
-  void InitAsDefaultInstance();
-  static CmdRequest_User* default_instance_;
+  static Entry* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -448,10 +346,17 @@ class CmdRequest_RequestVote : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required bytes ip = 1;
+  // required uint64 term = 1;
+  inline bool has_term() const;
+  inline void clear_term();
+  static const int kTermFieldNumber = 1;
+  inline ::google::protobuf::uint64 term() const;
+  inline void set_term(::google::protobuf::uint64 value);
+
+  // required bytes ip = 2;
   inline bool has_ip() const;
   inline void clear_ip();
-  static const int kIpFieldNumber = 1;
+  static const int kIpFieldNumber = 2;
   inline const ::std::string& ip() const;
   inline void set_ip(const ::std::string& value);
   inline void set_ip(const char* value);
@@ -460,53 +365,46 @@ class CmdRequest_RequestVote : public ::google::protobuf::Message {
   inline ::std::string* release_ip();
   inline void set_allocated_ip(::std::string* ip);
 
-  // required int32 port = 2;
+  // required int32 port = 3;
   inline bool has_port() const;
   inline void clear_port();
-  static const int kPortFieldNumber = 2;
+  static const int kPortFieldNumber = 3;
   inline ::google::protobuf::int32 port() const;
   inline void set_port(::google::protobuf::int32 value);
 
-  // required uint64 term = 3;
-  inline bool has_term() const;
-  inline void clear_term();
-  static const int kTermFieldNumber = 3;
-  inline ::google::protobuf::uint64 term() const;
-  inline void set_term(::google::protobuf::uint64 value);
-
-  // required uint64 last_log_term = 4;
-  inline bool has_last_log_term() const;
-  inline void clear_last_log_term();
-  static const int kLastLogTermFieldNumber = 4;
-  inline ::google::protobuf::uint64 last_log_term() const;
-  inline void set_last_log_term(::google::protobuf::uint64 value);
-
-  // required uint64 last_log_index = 5;
+  // required uint64 last_log_index = 4;
   inline bool has_last_log_index() const;
   inline void clear_last_log_index();
-  static const int kLastLogIndexFieldNumber = 5;
+  static const int kLastLogIndexFieldNumber = 4;
   inline ::google::protobuf::uint64 last_log_index() const;
   inline void set_last_log_index(::google::protobuf::uint64 value);
 
+  // required uint64 last_log_term = 5;
+  inline bool has_last_log_term() const;
+  inline void clear_last_log_term();
+  static const int kLastLogTermFieldNumber = 5;
+  inline ::google::protobuf::uint64 last_log_term() const;
+  inline void set_last_log_term(::google::protobuf::uint64 value);
+
   // @@protoc_insertion_point(class_scope:floyd.CmdRequest.RequestVote)
  private:
+  inline void set_has_term();
+  inline void clear_has_term();
   inline void set_has_ip();
   inline void clear_has_ip();
   inline void set_has_port();
   inline void clear_has_port();
-  inline void set_has_term();
-  inline void clear_has_term();
-  inline void set_has_last_log_term();
-  inline void clear_has_last_log_term();
   inline void set_has_last_log_index();
   inline void clear_has_last_log_index();
+  inline void set_has_last_log_term();
+  inline void clear_has_last_log_term();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* ip_;
   ::google::protobuf::uint64 term_;
-  ::google::protobuf::uint64 last_log_term_;
+  ::std::string* ip_;
   ::google::protobuf::uint64 last_log_index_;
+  ::google::protobuf::uint64 last_log_term_;
   ::google::protobuf::int32 port_;
 
   mutable int _cached_size_;
@@ -575,10 +473,17 @@ class CmdRequest_AppendEntries : public ::google::protobuf::Message {
 
   // accessors -------------------------------------------------------
 
-  // required bytes ip = 1;
+  // required uint64 term = 1;
+  inline bool has_term() const;
+  inline void clear_term();
+  static const int kTermFieldNumber = 1;
+  inline ::google::protobuf::uint64 term() const;
+  inline void set_term(::google::protobuf::uint64 value);
+
+  // required bytes ip = 2;
   inline bool has_ip() const;
   inline void clear_ip();
-  static const int kIpFieldNumber = 1;
+  static const int kIpFieldNumber = 2;
   inline const ::std::string& ip() const;
   inline void set_ip(const ::std::string& value);
   inline void set_ip(const char* value);
@@ -587,19 +492,12 @@ class CmdRequest_AppendEntries : public ::google::protobuf::Message {
   inline ::std::string* release_ip();
   inline void set_allocated_ip(::std::string* ip);
 
-  // required int32 port = 2;
+  // required int32 port = 3;
   inline bool has_port() const;
   inline void clear_port();
-  static const int kPortFieldNumber = 2;
+  static const int kPortFieldNumber = 3;
   inline ::google::protobuf::int32 port() const;
   inline void set_port(::google::protobuf::int32 value);
-
-  // required uint64 term = 3;
-  inline bool has_term() const;
-  inline void clear_term();
-  static const int kTermFieldNumber = 3;
-  inline ::google::protobuf::uint64 term() const;
-  inline void set_term(::google::protobuf::uint64 value);
 
   // required uint64 prev_log_index = 4;
   inline bool has_prev_log_index() const;
@@ -615,12 +513,12 @@ class CmdRequest_AppendEntries : public ::google::protobuf::Message {
   inline ::google::protobuf::uint64 prev_log_term() const;
   inline void set_prev_log_term(::google::protobuf::uint64 value);
 
-  // required uint64 commit_index = 6;
-  inline bool has_commit_index() const;
-  inline void clear_commit_index();
-  static const int kCommitIndexFieldNumber = 6;
-  inline ::google::protobuf::uint64 commit_index() const;
-  inline void set_commit_index(::google::protobuf::uint64 value);
+  // required uint64 leader_commit = 6;
+  inline bool has_leader_commit() const;
+  inline void clear_leader_commit();
+  static const int kLeaderCommitFieldNumber = 6;
+  inline ::google::protobuf::uint64 leader_commit() const;
+  inline void set_leader_commit(::google::protobuf::uint64 value);
 
   // repeated .floyd.Entry entries = 7;
   inline int entries_size() const;
@@ -636,26 +534,26 @@ class CmdRequest_AppendEntries : public ::google::protobuf::Message {
 
   // @@protoc_insertion_point(class_scope:floyd.CmdRequest.AppendEntries)
  private:
+  inline void set_has_term();
+  inline void clear_has_term();
   inline void set_has_ip();
   inline void clear_has_ip();
   inline void set_has_port();
   inline void clear_has_port();
-  inline void set_has_term();
-  inline void clear_has_term();
   inline void set_has_prev_log_index();
   inline void clear_has_prev_log_index();
   inline void set_has_prev_log_term();
   inline void clear_has_prev_log_term();
-  inline void set_has_commit_index();
-  inline void clear_has_commit_index();
+  inline void set_has_leader_commit();
+  inline void clear_has_leader_commit();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::std::string* ip_;
   ::google::protobuf::uint64 term_;
+  ::std::string* ip_;
   ::google::protobuf::uint64 prev_log_index_;
   ::google::protobuf::uint64 prev_log_term_;
-  ::google::protobuf::uint64 commit_index_;
+  ::google::protobuf::uint64 leader_commit_;
   ::google::protobuf::RepeatedPtrField< ::floyd::Entry > entries_;
   ::google::protobuf::int32 port_;
 
@@ -668,6 +566,220 @@ class CmdRequest_AppendEntries : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static CmdRequest_AppendEntries* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class CmdRequest_KvRequest : public ::google::protobuf::Message {
+ public:
+  CmdRequest_KvRequest();
+  virtual ~CmdRequest_KvRequest();
+
+  CmdRequest_KvRequest(const CmdRequest_KvRequest& from);
+
+  inline CmdRequest_KvRequest& operator=(const CmdRequest_KvRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CmdRequest_KvRequest& default_instance();
+
+  void Swap(CmdRequest_KvRequest* other);
+
+  // implements Message ----------------------------------------------
+
+  CmdRequest_KvRequest* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const CmdRequest_KvRequest& from);
+  void MergeFrom(const CmdRequest_KvRequest& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required bytes key = 1;
+  inline bool has_key() const;
+  inline void clear_key();
+  static const int kKeyFieldNumber = 1;
+  inline const ::std::string& key() const;
+  inline void set_key(const ::std::string& value);
+  inline void set_key(const char* value);
+  inline void set_key(const void* value, size_t size);
+  inline ::std::string* mutable_key();
+  inline ::std::string* release_key();
+  inline void set_allocated_key(::std::string* key);
+
+  // optional bytes value = 2;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 2;
+  inline const ::std::string& value() const;
+  inline void set_value(const ::std::string& value);
+  inline void set_value(const char* value);
+  inline void set_value(const void* value, size_t size);
+  inline ::std::string* mutable_value();
+  inline ::std::string* release_value();
+  inline void set_allocated_value(::std::string* value);
+
+  // @@protoc_insertion_point(class_scope:floyd.CmdRequest.KvRequest)
+ private:
+  inline void set_has_key();
+  inline void clear_has_key();
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* key_;
+  ::std::string* value_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_floyd_2eproto();
+  friend void protobuf_AssignDesc_floyd_2eproto();
+  friend void protobuf_ShutdownFile_floyd_2eproto();
+
+  void InitAsDefaultInstance();
+  static CmdRequest_KvRequest* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class CmdRequest_LockRequest : public ::google::protobuf::Message {
+ public:
+  CmdRequest_LockRequest();
+  virtual ~CmdRequest_LockRequest();
+
+  CmdRequest_LockRequest(const CmdRequest_LockRequest& from);
+
+  inline CmdRequest_LockRequest& operator=(const CmdRequest_LockRequest& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CmdRequest_LockRequest& default_instance();
+
+  void Swap(CmdRequest_LockRequest* other);
+
+  // implements Message ----------------------------------------------
+
+  CmdRequest_LockRequest* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const CmdRequest_LockRequest& from);
+  void MergeFrom(const CmdRequest_LockRequest& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required bytes name = 1;
+  inline bool has_name() const;
+  inline void clear_name();
+  static const int kNameFieldNumber = 1;
+  inline const ::std::string& name() const;
+  inline void set_name(const ::std::string& value);
+  inline void set_name(const char* value);
+  inline void set_name(const void* value, size_t size);
+  inline ::std::string* mutable_name();
+  inline ::std::string* release_name();
+  inline void set_allocated_name(::std::string* name);
+
+  // required bytes holder = 2;
+  inline bool has_holder() const;
+  inline void clear_holder();
+  static const int kHolderFieldNumber = 2;
+  inline const ::std::string& holder() const;
+  inline void set_holder(const ::std::string& value);
+  inline void set_holder(const char* value);
+  inline void set_holder(const void* value, size_t size);
+  inline ::std::string* mutable_holder();
+  inline ::std::string* release_holder();
+  inline void set_allocated_holder(::std::string* holder);
+
+  // optional uint64 lease_end = 3;
+  inline bool has_lease_end() const;
+  inline void clear_lease_end();
+  static const int kLeaseEndFieldNumber = 3;
+  inline ::google::protobuf::uint64 lease_end() const;
+  inline void set_lease_end(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:floyd.CmdRequest.LockRequest)
+ private:
+  inline void set_has_name();
+  inline void clear_has_name();
+  inline void set_has_holder();
+  inline void clear_has_holder();
+  inline void set_has_lease_end();
+  inline void clear_has_lease_end();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* name_;
+  ::std::string* holder_;
+  ::google::protobuf::uint64 lease_end_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_floyd_2eproto();
+  friend void protobuf_AssignDesc_floyd_2eproto();
+  friend void protobuf_ShutdownFile_floyd_2eproto();
+
+  void InitAsDefaultInstance();
+  static CmdRequest_LockRequest* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -840,10 +952,10 @@ class CmdRequest : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  typedef CmdRequest_Kv Kv;
-  typedef CmdRequest_User User;
   typedef CmdRequest_RequestVote RequestVote;
   typedef CmdRequest_AppendEntries AppendEntries;
+  typedef CmdRequest_KvRequest KvRequest;
+  typedef CmdRequest_LockRequest LockRequest;
   typedef CmdRequest_ServerStatus ServerStatus;
 
   // accessors -------------------------------------------------------
@@ -855,41 +967,41 @@ class CmdRequest : public ::google::protobuf::Message {
   inline ::floyd::Type type() const;
   inline void set_type(::floyd::Type value);
 
-  // optional .floyd.CmdRequest.Kv kv = 2;
-  inline bool has_kv() const;
-  inline void clear_kv();
-  static const int kKvFieldNumber = 2;
-  inline const ::floyd::CmdRequest_Kv& kv() const;
-  inline ::floyd::CmdRequest_Kv* mutable_kv();
-  inline ::floyd::CmdRequest_Kv* release_kv();
-  inline void set_allocated_kv(::floyd::CmdRequest_Kv* kv);
-
-  // optional .floyd.CmdRequest.User user = 3;
-  inline bool has_user() const;
-  inline void clear_user();
-  static const int kUserFieldNumber = 3;
-  inline const ::floyd::CmdRequest_User& user() const;
-  inline ::floyd::CmdRequest_User* mutable_user();
-  inline ::floyd::CmdRequest_User* release_user();
-  inline void set_allocated_user(::floyd::CmdRequest_User* user);
-
-  // optional .floyd.CmdRequest.RequestVote request_vote = 4;
+  // optional .floyd.CmdRequest.RequestVote request_vote = 2;
   inline bool has_request_vote() const;
   inline void clear_request_vote();
-  static const int kRequestVoteFieldNumber = 4;
+  static const int kRequestVoteFieldNumber = 2;
   inline const ::floyd::CmdRequest_RequestVote& request_vote() const;
   inline ::floyd::CmdRequest_RequestVote* mutable_request_vote();
   inline ::floyd::CmdRequest_RequestVote* release_request_vote();
   inline void set_allocated_request_vote(::floyd::CmdRequest_RequestVote* request_vote);
 
-  // optional .floyd.CmdRequest.AppendEntries append_entries = 5;
+  // optional .floyd.CmdRequest.AppendEntries append_entries = 3;
   inline bool has_append_entries() const;
   inline void clear_append_entries();
-  static const int kAppendEntriesFieldNumber = 5;
+  static const int kAppendEntriesFieldNumber = 3;
   inline const ::floyd::CmdRequest_AppendEntries& append_entries() const;
   inline ::floyd::CmdRequest_AppendEntries* mutable_append_entries();
   inline ::floyd::CmdRequest_AppendEntries* release_append_entries();
   inline void set_allocated_append_entries(::floyd::CmdRequest_AppendEntries* append_entries);
+
+  // optional .floyd.CmdRequest.KvRequest kv_request = 4;
+  inline bool has_kv_request() const;
+  inline void clear_kv_request();
+  static const int kKvRequestFieldNumber = 4;
+  inline const ::floyd::CmdRequest_KvRequest& kv_request() const;
+  inline ::floyd::CmdRequest_KvRequest* mutable_kv_request();
+  inline ::floyd::CmdRequest_KvRequest* release_kv_request();
+  inline void set_allocated_kv_request(::floyd::CmdRequest_KvRequest* kv_request);
+
+  // optional .floyd.CmdRequest.LockRequest lock_request = 5;
+  inline bool has_lock_request() const;
+  inline void clear_lock_request();
+  static const int kLockRequestFieldNumber = 5;
+  inline const ::floyd::CmdRequest_LockRequest& lock_request() const;
+  inline ::floyd::CmdRequest_LockRequest* mutable_lock_request();
+  inline ::floyd::CmdRequest_LockRequest* release_lock_request();
+  inline void set_allocated_lock_request(::floyd::CmdRequest_LockRequest* lock_request);
 
   // optional .floyd.CmdRequest.ServerStatus server_status = 6;
   inline bool has_server_status() const;
@@ -904,23 +1016,23 @@ class CmdRequest : public ::google::protobuf::Message {
  private:
   inline void set_has_type();
   inline void clear_has_type();
-  inline void set_has_kv();
-  inline void clear_has_kv();
-  inline void set_has_user();
-  inline void clear_has_user();
   inline void set_has_request_vote();
   inline void clear_has_request_vote();
   inline void set_has_append_entries();
   inline void clear_has_append_entries();
+  inline void set_has_kv_request();
+  inline void clear_has_kv_request();
+  inline void set_has_lock_request();
+  inline void clear_has_lock_request();
   inline void set_has_server_status();
   inline void clear_has_server_status();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
-  ::floyd::CmdRequest_Kv* kv_;
-  ::floyd::CmdRequest_User* user_;
   ::floyd::CmdRequest_RequestVote* request_vote_;
   ::floyd::CmdRequest_AppendEntries* append_entries_;
+  ::floyd::CmdRequest_KvRequest* kv_request_;
+  ::floyd::CmdRequest_LockRequest* lock_request_;
   ::floyd::CmdRequest_ServerStatus* server_status_;
   int type_;
 
@@ -936,14 +1048,14 @@ class CmdRequest : public ::google::protobuf::Message {
 };
 // -------------------------------------------------------------------
 
-class CmdResponse_Kv : public ::google::protobuf::Message {
+class CmdResponse_RequestVoteResponse : public ::google::protobuf::Message {
  public:
-  CmdResponse_Kv();
-  virtual ~CmdResponse_Kv();
+  CmdResponse_RequestVoteResponse();
+  virtual ~CmdResponse_RequestVoteResponse();
 
-  CmdResponse_Kv(const CmdResponse_Kv& from);
+  CmdResponse_RequestVoteResponse(const CmdResponse_RequestVoteResponse& from);
 
-  inline CmdResponse_Kv& operator=(const CmdResponse_Kv& from) {
+  inline CmdResponse_RequestVoteResponse& operator=(const CmdResponse_RequestVoteResponse& from) {
     CopyFrom(from);
     return *this;
   }
@@ -957,17 +1069,211 @@ class CmdResponse_Kv : public ::google::protobuf::Message {
   }
 
   static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdResponse_Kv& default_instance();
+  static const CmdResponse_RequestVoteResponse& default_instance();
 
-  void Swap(CmdResponse_Kv* other);
+  void Swap(CmdResponse_RequestVoteResponse* other);
 
   // implements Message ----------------------------------------------
 
-  CmdResponse_Kv* New() const;
+  CmdResponse_RequestVoteResponse* New() const;
   void CopyFrom(const ::google::protobuf::Message& from);
   void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdResponse_Kv& from);
-  void MergeFrom(const CmdResponse_Kv& from);
+  void CopyFrom(const CmdResponse_RequestVoteResponse& from);
+  void MergeFrom(const CmdResponse_RequestVoteResponse& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required uint64 term = 1;
+  inline bool has_term() const;
+  inline void clear_term();
+  static const int kTermFieldNumber = 1;
+  inline ::google::protobuf::uint64 term() const;
+  inline void set_term(::google::protobuf::uint64 value);
+
+  // required bool vote_granted = 2;
+  inline bool has_vote_granted() const;
+  inline void clear_vote_granted();
+  static const int kVoteGrantedFieldNumber = 2;
+  inline bool vote_granted() const;
+  inline void set_vote_granted(bool value);
+
+  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.RequestVoteResponse)
+ private:
+  inline void set_has_term();
+  inline void clear_has_term();
+  inline void set_has_vote_granted();
+  inline void clear_has_vote_granted();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint64 term_;
+  bool vote_granted_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_floyd_2eproto();
+  friend void protobuf_AssignDesc_floyd_2eproto();
+  friend void protobuf_ShutdownFile_floyd_2eproto();
+
+  void InitAsDefaultInstance();
+  static CmdResponse_RequestVoteResponse* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class CmdResponse_AppendEntriesResponse : public ::google::protobuf::Message {
+ public:
+  CmdResponse_AppendEntriesResponse();
+  virtual ~CmdResponse_AppendEntriesResponse();
+
+  CmdResponse_AppendEntriesResponse(const CmdResponse_AppendEntriesResponse& from);
+
+  inline CmdResponse_AppendEntriesResponse& operator=(const CmdResponse_AppendEntriesResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CmdResponse_AppendEntriesResponse& default_instance();
+
+  void Swap(CmdResponse_AppendEntriesResponse* other);
+
+  // implements Message ----------------------------------------------
+
+  CmdResponse_AppendEntriesResponse* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const CmdResponse_AppendEntriesResponse& from);
+  void MergeFrom(const CmdResponse_AppendEntriesResponse& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required uint64 term = 1;
+  inline bool has_term() const;
+  inline void clear_term();
+  static const int kTermFieldNumber = 1;
+  inline ::google::protobuf::uint64 term() const;
+  inline void set_term(::google::protobuf::uint64 value);
+
+  // required bool success = 2;
+  inline bool has_success() const;
+  inline void clear_success();
+  static const int kSuccessFieldNumber = 2;
+  inline bool success() const;
+  inline void set_success(bool value);
+
+  // optional uint64 last_log_index = 3;
+  inline bool has_last_log_index() const;
+  inline void clear_last_log_index();
+  static const int kLastLogIndexFieldNumber = 3;
+  inline ::google::protobuf::uint64 last_log_index() const;
+  inline void set_last_log_index(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.AppendEntriesResponse)
+ private:
+  inline void set_has_term();
+  inline void clear_has_term();
+  inline void set_has_success();
+  inline void clear_has_success();
+  inline void set_has_last_log_index();
+  inline void clear_has_last_log_index();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint64 term_;
+  ::google::protobuf::uint64 last_log_index_;
+  bool success_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(3 + 31) / 32];
+
+  friend void  protobuf_AddDesc_floyd_2eproto();
+  friend void protobuf_AssignDesc_floyd_2eproto();
+  friend void protobuf_ShutdownFile_floyd_2eproto();
+
+  void InitAsDefaultInstance();
+  static CmdResponse_AppendEntriesResponse* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class CmdResponse_KvResponse : public ::google::protobuf::Message {
+ public:
+  CmdResponse_KvResponse();
+  virtual ~CmdResponse_KvResponse();
+
+  CmdResponse_KvResponse(const CmdResponse_KvResponse& from);
+
+  inline CmdResponse_KvResponse& operator=(const CmdResponse_KvResponse& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const CmdResponse_KvResponse& default_instance();
+
+  void Swap(CmdResponse_KvResponse* other);
+
+  // implements Message ----------------------------------------------
+
+  CmdResponse_KvResponse* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const CmdResponse_KvResponse& from);
+  void MergeFrom(const CmdResponse_KvResponse& from);
   void Clear();
   bool IsInitialized() const;
 
@@ -1002,7 +1308,7 @@ class CmdResponse_Kv : public ::google::protobuf::Message {
   inline ::std::string* release_value();
   inline void set_allocated_value(::std::string* value);
 
-  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.Kv)
+  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.KvResponse)
  private:
   inline void set_has_value();
   inline void clear_has_value();
@@ -1019,92 +1325,7 @@ class CmdResponse_Kv : public ::google::protobuf::Message {
   friend void protobuf_ShutdownFile_floyd_2eproto();
 
   void InitAsDefaultInstance();
-  static CmdResponse_Kv* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CmdResponse_Kvs : public ::google::protobuf::Message {
- public:
-  CmdResponse_Kvs();
-  virtual ~CmdResponse_Kvs();
-
-  CmdResponse_Kvs(const CmdResponse_Kvs& from);
-
-  inline CmdResponse_Kvs& operator=(const CmdResponse_Kvs& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdResponse_Kvs& default_instance();
-
-  void Swap(CmdResponse_Kvs* other);
-
-  // implements Message ----------------------------------------------
-
-  CmdResponse_Kvs* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdResponse_Kvs& from);
-  void MergeFrom(const CmdResponse_Kvs& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // repeated .floyd.CmdResponse.Kv kv = 1;
-  inline int kv_size() const;
-  inline void clear_kv();
-  static const int kKvFieldNumber = 1;
-  inline const ::floyd::CmdResponse_Kv& kv(int index) const;
-  inline ::floyd::CmdResponse_Kv* mutable_kv(int index);
-  inline ::floyd::CmdResponse_Kv* add_kv();
-  inline const ::google::protobuf::RepeatedPtrField< ::floyd::CmdResponse_Kv >&
-      kv() const;
-  inline ::google::protobuf::RepeatedPtrField< ::floyd::CmdResponse_Kv >*
-      mutable_kv();
-
-  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.Kvs)
- private:
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::RepeatedPtrField< ::floyd::CmdResponse_Kv > kv_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_floyd_2eproto();
-  friend void protobuf_AssignDesc_floyd_2eproto();
-  friend void protobuf_ShutdownFile_floyd_2eproto();
-
-  void InitAsDefaultInstance();
-  static CmdResponse_Kvs* default_instance_;
+  static CmdResponse_KvResponse* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1240,12 +1461,12 @@ class CmdResponse_ServerStatus : public ::google::protobuf::Message {
   inline ::google::protobuf::uint64 last_log_index() const;
   inline void set_last_log_index(::google::protobuf::uint64 value);
 
-  // optional uint64 last_apply_index = 10;
-  inline bool has_last_apply_index() const;
-  inline void clear_last_apply_index();
-  static const int kLastApplyIndexFieldNumber = 10;
-  inline ::google::protobuf::uint64 last_apply_index() const;
-  inline void set_last_apply_index(::google::protobuf::uint64 value);
+  // optional uint64 last_applied = 10;
+  inline bool has_last_applied() const;
+  inline void clear_last_applied();
+  static const int kLastAppliedFieldNumber = 10;
+  inline ::google::protobuf::uint64 last_applied() const;
+  inline void set_last_applied(::google::protobuf::uint64 value);
 
   // @@protoc_insertion_point(class_scope:floyd.CmdResponse.ServerStatus)
  private:
@@ -1267,8 +1488,8 @@ class CmdResponse_ServerStatus : public ::google::protobuf::Message {
   inline void clear_has_last_log_term();
   inline void set_has_last_log_index();
   inline void clear_has_last_log_index();
-  inline void set_has_last_apply_index();
-  inline void clear_has_last_apply_index();
+  inline void set_has_last_applied();
+  inline void clear_has_last_applied();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -1281,7 +1502,7 @@ class CmdResponse_ServerStatus : public ::google::protobuf::Message {
   ::google::protobuf::int32 voted_for_port_;
   ::google::protobuf::uint64 last_log_term_;
   ::google::protobuf::uint64 last_log_index_;
-  ::google::protobuf::uint64 last_apply_index_;
+  ::google::protobuf::uint64 last_applied_;
 
   mutable int _cached_size_;
   ::google::protobuf::uint32 _has_bits_[(10 + 31) / 32];
@@ -1292,180 +1513,6 @@ class CmdResponse_ServerStatus : public ::google::protobuf::Message {
 
   void InitAsDefaultInstance();
   static CmdResponse_ServerStatus* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CmdResponse_RequestVote : public ::google::protobuf::Message {
- public:
-  CmdResponse_RequestVote();
-  virtual ~CmdResponse_RequestVote();
-
-  CmdResponse_RequestVote(const CmdResponse_RequestVote& from);
-
-  inline CmdResponse_RequestVote& operator=(const CmdResponse_RequestVote& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdResponse_RequestVote& default_instance();
-
-  void Swap(CmdResponse_RequestVote* other);
-
-  // implements Message ----------------------------------------------
-
-  CmdResponse_RequestVote* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdResponse_RequestVote& from);
-  void MergeFrom(const CmdResponse_RequestVote& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required uint64 term = 1;
-  inline bool has_term() const;
-  inline void clear_term();
-  static const int kTermFieldNumber = 1;
-  inline ::google::protobuf::uint64 term() const;
-  inline void set_term(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.RequestVote)
- private:
-  inline void set_has_term();
-  inline void clear_has_term();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::uint64 term_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(1 + 31) / 32];
-
-  friend void  protobuf_AddDesc_floyd_2eproto();
-  friend void protobuf_AssignDesc_floyd_2eproto();
-  friend void protobuf_ShutdownFile_floyd_2eproto();
-
-  void InitAsDefaultInstance();
-  static CmdResponse_RequestVote* default_instance_;
-};
-// -------------------------------------------------------------------
-
-class CmdResponse_AppendEntries : public ::google::protobuf::Message {
- public:
-  CmdResponse_AppendEntries();
-  virtual ~CmdResponse_AppendEntries();
-
-  CmdResponse_AppendEntries(const CmdResponse_AppendEntries& from);
-
-  inline CmdResponse_AppendEntries& operator=(const CmdResponse_AppendEntries& from) {
-    CopyFrom(from);
-    return *this;
-  }
-
-  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
-    return _unknown_fields_;
-  }
-
-  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
-    return &_unknown_fields_;
-  }
-
-  static const ::google::protobuf::Descriptor* descriptor();
-  static const CmdResponse_AppendEntries& default_instance();
-
-  void Swap(CmdResponse_AppendEntries* other);
-
-  // implements Message ----------------------------------------------
-
-  CmdResponse_AppendEntries* New() const;
-  void CopyFrom(const ::google::protobuf::Message& from);
-  void MergeFrom(const ::google::protobuf::Message& from);
-  void CopyFrom(const CmdResponse_AppendEntries& from);
-  void MergeFrom(const CmdResponse_AppendEntries& from);
-  void Clear();
-  bool IsInitialized() const;
-
-  int ByteSize() const;
-  bool MergePartialFromCodedStream(
-      ::google::protobuf::io::CodedInputStream* input);
-  void SerializeWithCachedSizes(
-      ::google::protobuf::io::CodedOutputStream* output) const;
-  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
-  int GetCachedSize() const { return _cached_size_; }
-  private:
-  void SharedCtor();
-  void SharedDtor();
-  void SetCachedSize(int size) const;
-  public:
-
-  ::google::protobuf::Metadata GetMetadata() const;
-
-  // nested types ----------------------------------------------------
-
-  // accessors -------------------------------------------------------
-
-  // required uint64 term = 1;
-  inline bool has_term() const;
-  inline void clear_term();
-  static const int kTermFieldNumber = 1;
-  inline ::google::protobuf::uint64 term() const;
-  inline void set_term(::google::protobuf::uint64 value);
-
-  // required uint64 last_log_index = 2;
-  inline bool has_last_log_index() const;
-  inline void clear_last_log_index();
-  static const int kLastLogIndexFieldNumber = 2;
-  inline ::google::protobuf::uint64 last_log_index() const;
-  inline void set_last_log_index(::google::protobuf::uint64 value);
-
-  // @@protoc_insertion_point(class_scope:floyd.CmdResponse.AppendEntries)
- private:
-  inline void set_has_term();
-  inline void clear_has_term();
-  inline void set_has_last_log_index();
-  inline void clear_has_last_log_index();
-
-  ::google::protobuf::UnknownFieldSet _unknown_fields_;
-
-  ::google::protobuf::uint64 term_;
-  ::google::protobuf::uint64 last_log_index_;
-
-  mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
-
-  friend void  protobuf_AddDesc_floyd_2eproto();
-  friend void protobuf_AssignDesc_floyd_2eproto();
-  friend void protobuf_ShutdownFile_floyd_2eproto();
-
-  void InitAsDefaultInstance();
-  static CmdResponse_AppendEntries* default_instance_;
 };
 // -------------------------------------------------------------------
 
@@ -1521,11 +1568,10 @@ class CmdResponse : public ::google::protobuf::Message {
 
   // nested types ----------------------------------------------------
 
-  typedef CmdResponse_Kv Kv;
-  typedef CmdResponse_Kvs Kvs;
+  typedef CmdResponse_RequestVoteResponse RequestVoteResponse;
+  typedef CmdResponse_AppendEntriesResponse AppendEntriesResponse;
+  typedef CmdResponse_KvResponse KvResponse;
   typedef CmdResponse_ServerStatus ServerStatus;
-  typedef CmdResponse_RequestVote RequestVote;
-  typedef CmdResponse_AppendEntries AppendEntries;
 
   // accessors -------------------------------------------------------
 
@@ -1536,17 +1582,35 @@ class CmdResponse : public ::google::protobuf::Message {
   inline ::floyd::Type type() const;
   inline void set_type(::floyd::Type value);
 
-  // required .floyd.StatusCode code = 2;
+  // optional .floyd.StatusCode code = 2;
   inline bool has_code() const;
   inline void clear_code();
   static const int kCodeFieldNumber = 2;
   inline ::floyd::StatusCode code() const;
   inline void set_code(::floyd::StatusCode value);
 
-  // optional bytes msg = 3;
+  // optional .floyd.CmdResponse.RequestVoteResponse request_vote_res = 3;
+  inline bool has_request_vote_res() const;
+  inline void clear_request_vote_res();
+  static const int kRequestVoteResFieldNumber = 3;
+  inline const ::floyd::CmdResponse_RequestVoteResponse& request_vote_res() const;
+  inline ::floyd::CmdResponse_RequestVoteResponse* mutable_request_vote_res();
+  inline ::floyd::CmdResponse_RequestVoteResponse* release_request_vote_res();
+  inline void set_allocated_request_vote_res(::floyd::CmdResponse_RequestVoteResponse* request_vote_res);
+
+  // optional .floyd.CmdResponse.AppendEntriesResponse append_entries_res = 4;
+  inline bool has_append_entries_res() const;
+  inline void clear_append_entries_res();
+  static const int kAppendEntriesResFieldNumber = 4;
+  inline const ::floyd::CmdResponse_AppendEntriesResponse& append_entries_res() const;
+  inline ::floyd::CmdResponse_AppendEntriesResponse* mutable_append_entries_res();
+  inline ::floyd::CmdResponse_AppendEntriesResponse* release_append_entries_res();
+  inline void set_allocated_append_entries_res(::floyd::CmdResponse_AppendEntriesResponse* append_entries_res);
+
+  // optional bytes msg = 5;
   inline bool has_msg() const;
   inline void clear_msg();
-  static const int kMsgFieldNumber = 3;
+  static const int kMsgFieldNumber = 5;
   inline const ::std::string& msg() const;
   inline void set_msg(const ::std::string& value);
   inline void set_msg(const char* value);
@@ -1555,50 +1619,23 @@ class CmdResponse : public ::google::protobuf::Message {
   inline ::std::string* release_msg();
   inline void set_allocated_msg(::std::string* msg);
 
-  // optional .floyd.CmdResponse.Kv kv = 4;
-  inline bool has_kv() const;
-  inline void clear_kv();
-  static const int kKvFieldNumber = 4;
-  inline const ::floyd::CmdResponse_Kv& kv() const;
-  inline ::floyd::CmdResponse_Kv* mutable_kv();
-  inline ::floyd::CmdResponse_Kv* release_kv();
-  inline void set_allocated_kv(::floyd::CmdResponse_Kv* kv);
+  // optional .floyd.CmdResponse.KvResponse kv_response = 6;
+  inline bool has_kv_response() const;
+  inline void clear_kv_response();
+  static const int kKvResponseFieldNumber = 6;
+  inline const ::floyd::CmdResponse_KvResponse& kv_response() const;
+  inline ::floyd::CmdResponse_KvResponse* mutable_kv_response();
+  inline ::floyd::CmdResponse_KvResponse* release_kv_response();
+  inline void set_allocated_kv_response(::floyd::CmdResponse_KvResponse* kv_response);
 
-  // optional .floyd.CmdResponse.Kvs kvs = 5;
-  inline bool has_kvs() const;
-  inline void clear_kvs();
-  static const int kKvsFieldNumber = 5;
-  inline const ::floyd::CmdResponse_Kvs& kvs() const;
-  inline ::floyd::CmdResponse_Kvs* mutable_kvs();
-  inline ::floyd::CmdResponse_Kvs* release_kvs();
-  inline void set_allocated_kvs(::floyd::CmdResponse_Kvs* kvs);
-
-  // optional .floyd.CmdResponse.ServerStatus server_status = 6;
+  // optional .floyd.CmdResponse.ServerStatus server_status = 7;
   inline bool has_server_status() const;
   inline void clear_server_status();
-  static const int kServerStatusFieldNumber = 6;
+  static const int kServerStatusFieldNumber = 7;
   inline const ::floyd::CmdResponse_ServerStatus& server_status() const;
   inline ::floyd::CmdResponse_ServerStatus* mutable_server_status();
   inline ::floyd::CmdResponse_ServerStatus* release_server_status();
   inline void set_allocated_server_status(::floyd::CmdResponse_ServerStatus* server_status);
-
-  // optional .floyd.CmdResponse.RequestVote request_vote = 7;
-  inline bool has_request_vote() const;
-  inline void clear_request_vote();
-  static const int kRequestVoteFieldNumber = 7;
-  inline const ::floyd::CmdResponse_RequestVote& request_vote() const;
-  inline ::floyd::CmdResponse_RequestVote* mutable_request_vote();
-  inline ::floyd::CmdResponse_RequestVote* release_request_vote();
-  inline void set_allocated_request_vote(::floyd::CmdResponse_RequestVote* request_vote);
-
-  // optional .floyd.CmdResponse.AppendEntries append_entries = 8;
-  inline bool has_append_entries() const;
-  inline void clear_append_entries();
-  static const int kAppendEntriesFieldNumber = 8;
-  inline const ::floyd::CmdResponse_AppendEntries& append_entries() const;
-  inline ::floyd::CmdResponse_AppendEntries* mutable_append_entries();
-  inline ::floyd::CmdResponse_AppendEntries* release_append_entries();
-  inline void set_allocated_append_entries(::floyd::CmdResponse_AppendEntries* append_entries);
 
   // @@protoc_insertion_point(class_scope:floyd.CmdResponse)
  private:
@@ -1606,32 +1643,29 @@ class CmdResponse : public ::google::protobuf::Message {
   inline void clear_has_type();
   inline void set_has_code();
   inline void clear_has_code();
+  inline void set_has_request_vote_res();
+  inline void clear_has_request_vote_res();
+  inline void set_has_append_entries_res();
+  inline void clear_has_append_entries_res();
   inline void set_has_msg();
   inline void clear_has_msg();
-  inline void set_has_kv();
-  inline void clear_has_kv();
-  inline void set_has_kvs();
-  inline void clear_has_kvs();
+  inline void set_has_kv_response();
+  inline void clear_has_kv_response();
   inline void set_has_server_status();
   inline void clear_has_server_status();
-  inline void set_has_request_vote();
-  inline void clear_has_request_vote();
-  inline void set_has_append_entries();
-  inline void clear_has_append_entries();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
   int type_;
   int code_;
+  ::floyd::CmdResponse_RequestVoteResponse* request_vote_res_;
+  ::floyd::CmdResponse_AppendEntriesResponse* append_entries_res_;
   ::std::string* msg_;
-  ::floyd::CmdResponse_Kv* kv_;
-  ::floyd::CmdResponse_Kvs* kvs_;
+  ::floyd::CmdResponse_KvResponse* kv_response_;
   ::floyd::CmdResponse_ServerStatus* server_status_;
-  ::floyd::CmdResponse_RequestVote* request_vote_;
-  ::floyd::CmdResponse_AppendEntries* append_entries_;
 
   mutable int _cached_size_;
-  ::google::protobuf::uint32 _has_bits_[(8 + 31) / 32];
+  ::google::protobuf::uint32 _has_bits_[(7 + 31) / 32];
 
   friend void  protobuf_AddDesc_floyd_2eproto();
   friend void protobuf_AssignDesc_floyd_2eproto();
@@ -1640,6 +1674,103 @@ class CmdResponse : public ::google::protobuf::Message {
   void InitAsDefaultInstance();
   static CmdResponse* default_instance_;
 };
+// -------------------------------------------------------------------
+
+class Lock : public ::google::protobuf::Message {
+ public:
+  Lock();
+  virtual ~Lock();
+
+  Lock(const Lock& from);
+
+  inline Lock& operator=(const Lock& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const Lock& default_instance();
+
+  void Swap(Lock* other);
+
+  // implements Message ----------------------------------------------
+
+  Lock* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const Lock& from);
+  void MergeFrom(const Lock& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required bytes holder = 1;
+  inline bool has_holder() const;
+  inline void clear_holder();
+  static const int kHolderFieldNumber = 1;
+  inline const ::std::string& holder() const;
+  inline void set_holder(const ::std::string& value);
+  inline void set_holder(const char* value);
+  inline void set_holder(const void* value, size_t size);
+  inline ::std::string* mutable_holder();
+  inline ::std::string* release_holder();
+  inline void set_allocated_holder(::std::string* holder);
+
+  // required uint64 lease_end = 2;
+  inline bool has_lease_end() const;
+  inline void clear_lease_end();
+  static const int kLeaseEndFieldNumber = 2;
+  inline ::google::protobuf::uint64 lease_end() const;
+  inline void set_lease_end(::google::protobuf::uint64 value);
+
+  // @@protoc_insertion_point(class_scope:floyd.Lock)
+ private:
+  inline void set_has_holder();
+  inline void clear_has_holder();
+  inline void set_has_lease_end();
+  inline void clear_has_lease_end();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::std::string* holder_;
+  ::google::protobuf::uint64 lease_end_;
+
+  mutable int _cached_size_;
+  ::google::protobuf::uint32 _has_bits_[(2 + 31) / 32];
+
+  friend void  protobuf_AddDesc_floyd_2eproto();
+  friend void protobuf_AssignDesc_floyd_2eproto();
+  friend void protobuf_ShutdownFile_floyd_2eproto();
+
+  void InitAsDefaultInstance();
+  static Lock* default_instance_;
+};
 // ===================================================================
 
 
@@ -1647,15 +1778,38 @@ class CmdResponse : public ::google::protobuf::Message {
 
 // Entry
 
-// required uint64 term = 2;
-inline bool Entry::has_term() const {
+// required .floyd.Entry.OpType optype = 1;
+inline bool Entry::has_optype() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void Entry::set_has_term() {
+inline void Entry::set_has_optype() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void Entry::clear_has_term() {
+inline void Entry::clear_has_optype() {
   _has_bits_[0] &= ~0x00000001u;
+}
+inline void Entry::clear_optype() {
+  optype_ = 0;
+  clear_has_optype();
+}
+inline ::floyd::Entry_OpType Entry::optype() const {
+  return static_cast< ::floyd::Entry_OpType >(optype_);
+}
+inline void Entry::set_optype(::floyd::Entry_OpType value) {
+  assert(::floyd::Entry_OpType_IsValid(value));
+  set_has_optype();
+  optype_ = value;
+}
+
+// required uint64 term = 2;
+inline bool Entry::has_term() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void Entry::set_has_term() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void Entry::clear_has_term() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void Entry::clear_term() {
   term_ = GOOGLE_ULONGLONG(0);
@@ -1669,128 +1823,54 @@ inline void Entry::set_term(::google::protobuf::uint64 value) {
   term_ = value;
 }
 
-// optional bytes cmd = 3;
-inline bool Entry::has_cmd() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+// required string key = 3;
+inline bool Entry::has_key() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void Entry::set_has_cmd() {
-  _has_bits_[0] |= 0x00000002u;
+inline void Entry::set_has_key() {
+  _has_bits_[0] |= 0x00000004u;
 }
-inline void Entry::clear_has_cmd() {
-  _has_bits_[0] &= ~0x00000002u;
+inline void Entry::clear_has_key() {
+  _has_bits_[0] &= ~0x00000004u;
 }
-inline void Entry::clear_cmd() {
-  if (cmd_ != &::google::protobuf::internal::kEmptyString) {
-    cmd_->clear();
-  }
-  clear_has_cmd();
-}
-inline const ::std::string& Entry::cmd() const {
-  return *cmd_;
-}
-inline void Entry::set_cmd(const ::std::string& value) {
-  set_has_cmd();
-  if (cmd_ == &::google::protobuf::internal::kEmptyString) {
-    cmd_ = new ::std::string;
-  }
-  cmd_->assign(value);
-}
-inline void Entry::set_cmd(const char* value) {
-  set_has_cmd();
-  if (cmd_ == &::google::protobuf::internal::kEmptyString) {
-    cmd_ = new ::std::string;
-  }
-  cmd_->assign(value);
-}
-inline void Entry::set_cmd(const void* value, size_t size) {
-  set_has_cmd();
-  if (cmd_ == &::google::protobuf::internal::kEmptyString) {
-    cmd_ = new ::std::string;
-  }
-  cmd_->assign(reinterpret_cast<const char*>(value), size);
-}
-inline ::std::string* Entry::mutable_cmd() {
-  set_has_cmd();
-  if (cmd_ == &::google::protobuf::internal::kEmptyString) {
-    cmd_ = new ::std::string;
-  }
-  return cmd_;
-}
-inline ::std::string* Entry::release_cmd() {
-  clear_has_cmd();
-  if (cmd_ == &::google::protobuf::internal::kEmptyString) {
-    return NULL;
-  } else {
-    ::std::string* temp = cmd_;
-    cmd_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-    return temp;
-  }
-}
-inline void Entry::set_allocated_cmd(::std::string* cmd) {
-  if (cmd_ != &::google::protobuf::internal::kEmptyString) {
-    delete cmd_;
-  }
-  if (cmd) {
-    set_has_cmd();
-    cmd_ = cmd;
-  } else {
-    clear_has_cmd();
-    cmd_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
-  }
-}
-
-// -------------------------------------------------------------------
-
-// CmdRequest_Kv
-
-// required bytes key = 1;
-inline bool CmdRequest_Kv::has_key() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void CmdRequest_Kv::set_has_key() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void CmdRequest_Kv::clear_has_key() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void CmdRequest_Kv::clear_key() {
+inline void Entry::clear_key() {
   if (key_ != &::google::protobuf::internal::kEmptyString) {
     key_->clear();
   }
   clear_has_key();
 }
-inline const ::std::string& CmdRequest_Kv::key() const {
+inline const ::std::string& Entry::key() const {
   return *key_;
 }
-inline void CmdRequest_Kv::set_key(const ::std::string& value) {
+inline void Entry::set_key(const ::std::string& value) {
   set_has_key();
   if (key_ == &::google::protobuf::internal::kEmptyString) {
     key_ = new ::std::string;
   }
   key_->assign(value);
 }
-inline void CmdRequest_Kv::set_key(const char* value) {
+inline void Entry::set_key(const char* value) {
   set_has_key();
   if (key_ == &::google::protobuf::internal::kEmptyString) {
     key_ = new ::std::string;
   }
   key_->assign(value);
 }
-inline void CmdRequest_Kv::set_key(const void* value, size_t size) {
+inline void Entry::set_key(const char* value, size_t size) {
   set_has_key();
   if (key_ == &::google::protobuf::internal::kEmptyString) {
     key_ = new ::std::string;
   }
   key_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* CmdRequest_Kv::mutable_key() {
+inline ::std::string* Entry::mutable_key() {
   set_has_key();
   if (key_ == &::google::protobuf::internal::kEmptyString) {
     key_ = new ::std::string;
   }
   return key_;
 }
-inline ::std::string* CmdRequest_Kv::release_key() {
+inline ::std::string* Entry::release_key() {
   clear_has_key();
   if (key_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
@@ -1800,7 +1880,7 @@ inline ::std::string* CmdRequest_Kv::release_key() {
     return temp;
   }
 }
-inline void CmdRequest_Kv::set_allocated_key(::std::string* key) {
+inline void Entry::set_allocated_key(::std::string* key) {
   if (key_ != &::google::protobuf::internal::kEmptyString) {
     delete key_;
   }
@@ -1813,54 +1893,54 @@ inline void CmdRequest_Kv::set_allocated_key(::std::string* key) {
   }
 }
 
-// optional bytes value = 2;
-inline bool CmdRequest_Kv::has_value() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+// optional bytes value = 4;
+inline bool Entry::has_value() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void CmdRequest_Kv::set_has_value() {
-  _has_bits_[0] |= 0x00000002u;
+inline void Entry::set_has_value() {
+  _has_bits_[0] |= 0x00000008u;
 }
-inline void CmdRequest_Kv::clear_has_value() {
-  _has_bits_[0] &= ~0x00000002u;
+inline void Entry::clear_has_value() {
+  _has_bits_[0] &= ~0x00000008u;
 }
-inline void CmdRequest_Kv::clear_value() {
+inline void Entry::clear_value() {
   if (value_ != &::google::protobuf::internal::kEmptyString) {
     value_->clear();
   }
   clear_has_value();
 }
-inline const ::std::string& CmdRequest_Kv::value() const {
+inline const ::std::string& Entry::value() const {
   return *value_;
 }
-inline void CmdRequest_Kv::set_value(const ::std::string& value) {
+inline void Entry::set_value(const ::std::string& value) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(value);
 }
-inline void CmdRequest_Kv::set_value(const char* value) {
+inline void Entry::set_value(const char* value) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(value);
 }
-inline void CmdRequest_Kv::set_value(const void* value, size_t size) {
+inline void Entry::set_value(const void* value, size_t size) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* CmdRequest_Kv::mutable_value() {
+inline ::std::string* Entry::mutable_value() {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   return value_;
 }
-inline ::std::string* CmdRequest_Kv::release_value() {
+inline ::std::string* Entry::release_value() {
   clear_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
@@ -1870,7 +1950,7 @@ inline ::std::string* CmdRequest_Kv::release_value() {
     return temp;
   }
 }
-inline void CmdRequest_Kv::set_allocated_value(::std::string* value) {
+inline void Entry::set_allocated_value(::std::string* value) {
   if (value_ != &::google::protobuf::internal::kEmptyString) {
     delete value_;
   }
@@ -1883,115 +1963,133 @@ inline void CmdRequest_Kv::set_allocated_value(::std::string* value) {
   }
 }
 
-// -------------------------------------------------------------------
-
-// CmdRequest_User
-
-// required bytes ip = 1;
-inline bool CmdRequest_User::has_ip() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
+// optional bytes holder = 5;
+inline bool Entry::has_holder() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
 }
-inline void CmdRequest_User::set_has_ip() {
-  _has_bits_[0] |= 0x00000001u;
+inline void Entry::set_has_holder() {
+  _has_bits_[0] |= 0x00000010u;
 }
-inline void CmdRequest_User::clear_has_ip() {
-  _has_bits_[0] &= ~0x00000001u;
+inline void Entry::clear_has_holder() {
+  _has_bits_[0] &= ~0x00000010u;
 }
-inline void CmdRequest_User::clear_ip() {
-  if (ip_ != &::google::protobuf::internal::kEmptyString) {
-    ip_->clear();
+inline void Entry::clear_holder() {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    holder_->clear();
   }
-  clear_has_ip();
+  clear_has_holder();
 }
-inline const ::std::string& CmdRequest_User::ip() const {
-  return *ip_;
+inline const ::std::string& Entry::holder() const {
+  return *holder_;
 }
-inline void CmdRequest_User::set_ip(const ::std::string& value) {
-  set_has_ip();
-  if (ip_ == &::google::protobuf::internal::kEmptyString) {
-    ip_ = new ::std::string;
+inline void Entry::set_holder(const ::std::string& value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
   }
-  ip_->assign(value);
+  holder_->assign(value);
 }
-inline void CmdRequest_User::set_ip(const char* value) {
-  set_has_ip();
-  if (ip_ == &::google::protobuf::internal::kEmptyString) {
-    ip_ = new ::std::string;
+inline void Entry::set_holder(const char* value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
   }
-  ip_->assign(value);
+  holder_->assign(value);
 }
-inline void CmdRequest_User::set_ip(const void* value, size_t size) {
-  set_has_ip();
-  if (ip_ == &::google::protobuf::internal::kEmptyString) {
-    ip_ = new ::std::string;
+inline void Entry::set_holder(const void* value, size_t size) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
   }
-  ip_->assign(reinterpret_cast<const char*>(value), size);
+  holder_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* CmdRequest_User::mutable_ip() {
-  set_has_ip();
-  if (ip_ == &::google::protobuf::internal::kEmptyString) {
-    ip_ = new ::std::string;
+inline ::std::string* Entry::mutable_holder() {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
   }
-  return ip_;
+  return holder_;
 }
-inline ::std::string* CmdRequest_User::release_ip() {
-  clear_has_ip();
-  if (ip_ == &::google::protobuf::internal::kEmptyString) {
+inline ::std::string* Entry::release_holder() {
+  clear_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
   } else {
-    ::std::string* temp = ip_;
-    ip_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    ::std::string* temp = holder_;
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
     return temp;
   }
 }
-inline void CmdRequest_User::set_allocated_ip(::std::string* ip) {
-  if (ip_ != &::google::protobuf::internal::kEmptyString) {
-    delete ip_;
+inline void Entry::set_allocated_holder(::std::string* holder) {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    delete holder_;
   }
-  if (ip) {
-    set_has_ip();
-    ip_ = ip;
+  if (holder) {
+    set_has_holder();
+    holder_ = holder;
   } else {
-    clear_has_ip();
-    ip_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    clear_has_holder();
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   }
 }
 
-// required int32 port = 2;
-inline bool CmdRequest_User::has_port() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+// optional uint64 lease_end = 6;
+inline bool Entry::has_lease_end() const {
+  return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void CmdRequest_User::set_has_port() {
-  _has_bits_[0] |= 0x00000002u;
+inline void Entry::set_has_lease_end() {
+  _has_bits_[0] |= 0x00000020u;
 }
-inline void CmdRequest_User::clear_has_port() {
-  _has_bits_[0] &= ~0x00000002u;
+inline void Entry::clear_has_lease_end() {
+  _has_bits_[0] &= ~0x00000020u;
 }
-inline void CmdRequest_User::clear_port() {
-  port_ = 0;
-  clear_has_port();
+inline void Entry::clear_lease_end() {
+  lease_end_ = GOOGLE_ULONGLONG(0);
+  clear_has_lease_end();
 }
-inline ::google::protobuf::int32 CmdRequest_User::port() const {
-  return port_;
+inline ::google::protobuf::uint64 Entry::lease_end() const {
+  return lease_end_;
 }
-inline void CmdRequest_User::set_port(::google::protobuf::int32 value) {
-  set_has_port();
-  port_ = value;
+inline void Entry::set_lease_end(::google::protobuf::uint64 value) {
+  set_has_lease_end();
+  lease_end_ = value;
 }
 
 // -------------------------------------------------------------------
 
 // CmdRequest_RequestVote
 
-// required bytes ip = 1;
-inline bool CmdRequest_RequestVote::has_ip() const {
+// required uint64 term = 1;
+inline bool CmdRequest_RequestVote::has_term() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void CmdRequest_RequestVote::set_has_ip() {
+inline void CmdRequest_RequestVote::set_has_term() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void CmdRequest_RequestVote::clear_has_ip() {
+inline void CmdRequest_RequestVote::clear_has_term() {
   _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdRequest_RequestVote::clear_term() {
+  term_ = GOOGLE_ULONGLONG(0);
+  clear_has_term();
+}
+inline ::google::protobuf::uint64 CmdRequest_RequestVote::term() const {
+  return term_;
+}
+inline void CmdRequest_RequestVote::set_term(::google::protobuf::uint64 value) {
+  set_has_term();
+  term_ = value;
+}
+
+// required bytes ip = 2;
+inline bool CmdRequest_RequestVote::has_ip() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdRequest_RequestVote::set_has_ip() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdRequest_RequestVote::clear_has_ip() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void CmdRequest_RequestVote::clear_ip() {
   if (ip_ != &::google::protobuf::internal::kEmptyString) {
@@ -2053,15 +2151,15 @@ inline void CmdRequest_RequestVote::set_allocated_ip(::std::string* ip) {
   }
 }
 
-// required int32 port = 2;
+// required int32 port = 3;
 inline bool CmdRequest_RequestVote::has_port() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void CmdRequest_RequestVote::set_has_port() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void CmdRequest_RequestVote::clear_has_port() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void CmdRequest_RequestVote::clear_port() {
   port_ = 0;
@@ -2075,59 +2173,15 @@ inline void CmdRequest_RequestVote::set_port(::google::protobuf::int32 value) {
   port_ = value;
 }
 
-// required uint64 term = 3;
-inline bool CmdRequest_RequestVote::has_term() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void CmdRequest_RequestVote::set_has_term() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void CmdRequest_RequestVote::clear_has_term() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void CmdRequest_RequestVote::clear_term() {
-  term_ = GOOGLE_ULONGLONG(0);
-  clear_has_term();
-}
-inline ::google::protobuf::uint64 CmdRequest_RequestVote::term() const {
-  return term_;
-}
-inline void CmdRequest_RequestVote::set_term(::google::protobuf::uint64 value) {
-  set_has_term();
-  term_ = value;
-}
-
-// required uint64 last_log_term = 4;
-inline bool CmdRequest_RequestVote::has_last_log_term() const {
+// required uint64 last_log_index = 4;
+inline bool CmdRequest_RequestVote::has_last_log_index() const {
   return (_has_bits_[0] & 0x00000008u) != 0;
 }
-inline void CmdRequest_RequestVote::set_has_last_log_term() {
+inline void CmdRequest_RequestVote::set_has_last_log_index() {
   _has_bits_[0] |= 0x00000008u;
 }
-inline void CmdRequest_RequestVote::clear_has_last_log_term() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void CmdRequest_RequestVote::clear_last_log_term() {
-  last_log_term_ = GOOGLE_ULONGLONG(0);
-  clear_has_last_log_term();
-}
-inline ::google::protobuf::uint64 CmdRequest_RequestVote::last_log_term() const {
-  return last_log_term_;
-}
-inline void CmdRequest_RequestVote::set_last_log_term(::google::protobuf::uint64 value) {
-  set_has_last_log_term();
-  last_log_term_ = value;
-}
-
-// required uint64 last_log_index = 5;
-inline bool CmdRequest_RequestVote::has_last_log_index() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void CmdRequest_RequestVote::set_has_last_log_index() {
-  _has_bits_[0] |= 0x00000010u;
-}
 inline void CmdRequest_RequestVote::clear_has_last_log_index() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000008u;
 }
 inline void CmdRequest_RequestVote::clear_last_log_index() {
   last_log_index_ = GOOGLE_ULONGLONG(0);
@@ -2141,19 +2195,63 @@ inline void CmdRequest_RequestVote::set_last_log_index(::google::protobuf::uint6
   last_log_index_ = value;
 }
 
+// required uint64 last_log_term = 5;
+inline bool CmdRequest_RequestVote::has_last_log_term() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void CmdRequest_RequestVote::set_has_last_log_term() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void CmdRequest_RequestVote::clear_has_last_log_term() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void CmdRequest_RequestVote::clear_last_log_term() {
+  last_log_term_ = GOOGLE_ULONGLONG(0);
+  clear_has_last_log_term();
+}
+inline ::google::protobuf::uint64 CmdRequest_RequestVote::last_log_term() const {
+  return last_log_term_;
+}
+inline void CmdRequest_RequestVote::set_last_log_term(::google::protobuf::uint64 value) {
+  set_has_last_log_term();
+  last_log_term_ = value;
+}
+
 // -------------------------------------------------------------------
 
 // CmdRequest_AppendEntries
 
-// required bytes ip = 1;
-inline bool CmdRequest_AppendEntries::has_ip() const {
+// required uint64 term = 1;
+inline bool CmdRequest_AppendEntries::has_term() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void CmdRequest_AppendEntries::set_has_ip() {
+inline void CmdRequest_AppendEntries::set_has_term() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void CmdRequest_AppendEntries::clear_has_ip() {
+inline void CmdRequest_AppendEntries::clear_has_term() {
   _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdRequest_AppendEntries::clear_term() {
+  term_ = GOOGLE_ULONGLONG(0);
+  clear_has_term();
+}
+inline ::google::protobuf::uint64 CmdRequest_AppendEntries::term() const {
+  return term_;
+}
+inline void CmdRequest_AppendEntries::set_term(::google::protobuf::uint64 value) {
+  set_has_term();
+  term_ = value;
+}
+
+// required bytes ip = 2;
+inline bool CmdRequest_AppendEntries::has_ip() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdRequest_AppendEntries::set_has_ip() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdRequest_AppendEntries::clear_has_ip() {
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void CmdRequest_AppendEntries::clear_ip() {
   if (ip_ != &::google::protobuf::internal::kEmptyString) {
@@ -2215,15 +2313,15 @@ inline void CmdRequest_AppendEntries::set_allocated_ip(::std::string* ip) {
   }
 }
 
-// required int32 port = 2;
+// required int32 port = 3;
 inline bool CmdRequest_AppendEntries::has_port() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void CmdRequest_AppendEntries::set_has_port() {
-  _has_bits_[0] |= 0x00000002u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void CmdRequest_AppendEntries::clear_has_port() {
-  _has_bits_[0] &= ~0x00000002u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void CmdRequest_AppendEntries::clear_port() {
   port_ = 0;
@@ -2235,28 +2333,6 @@ inline ::google::protobuf::int32 CmdRequest_AppendEntries::port() const {
 inline void CmdRequest_AppendEntries::set_port(::google::protobuf::int32 value) {
   set_has_port();
   port_ = value;
-}
-
-// required uint64 term = 3;
-inline bool CmdRequest_AppendEntries::has_term() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void CmdRequest_AppendEntries::set_has_term() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void CmdRequest_AppendEntries::clear_has_term() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void CmdRequest_AppendEntries::clear_term() {
-  term_ = GOOGLE_ULONGLONG(0);
-  clear_has_term();
-}
-inline ::google::protobuf::uint64 CmdRequest_AppendEntries::term() const {
-  return term_;
-}
-inline void CmdRequest_AppendEntries::set_term(::google::protobuf::uint64 value) {
-  set_has_term();
-  term_ = value;
 }
 
 // required uint64 prev_log_index = 4;
@@ -2303,26 +2379,26 @@ inline void CmdRequest_AppendEntries::set_prev_log_term(::google::protobuf::uint
   prev_log_term_ = value;
 }
 
-// required uint64 commit_index = 6;
-inline bool CmdRequest_AppendEntries::has_commit_index() const {
+// required uint64 leader_commit = 6;
+inline bool CmdRequest_AppendEntries::has_leader_commit() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void CmdRequest_AppendEntries::set_has_commit_index() {
+inline void CmdRequest_AppendEntries::set_has_leader_commit() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void CmdRequest_AppendEntries::clear_has_commit_index() {
+inline void CmdRequest_AppendEntries::clear_has_leader_commit() {
   _has_bits_[0] &= ~0x00000020u;
 }
-inline void CmdRequest_AppendEntries::clear_commit_index() {
-  commit_index_ = GOOGLE_ULONGLONG(0);
-  clear_has_commit_index();
+inline void CmdRequest_AppendEntries::clear_leader_commit() {
+  leader_commit_ = GOOGLE_ULONGLONG(0);
+  clear_has_leader_commit();
 }
-inline ::google::protobuf::uint64 CmdRequest_AppendEntries::commit_index() const {
-  return commit_index_;
+inline ::google::protobuf::uint64 CmdRequest_AppendEntries::leader_commit() const {
+  return leader_commit_;
 }
-inline void CmdRequest_AppendEntries::set_commit_index(::google::protobuf::uint64 value) {
-  set_has_commit_index();
-  commit_index_ = value;
+inline void CmdRequest_AppendEntries::set_leader_commit(::google::protobuf::uint64 value) {
+  set_has_leader_commit();
+  leader_commit_ = value;
 }
 
 // repeated .floyd.Entry entries = 7;
@@ -2348,6 +2424,316 @@ CmdRequest_AppendEntries::entries() const {
 inline ::google::protobuf::RepeatedPtrField< ::floyd::Entry >*
 CmdRequest_AppendEntries::mutable_entries() {
   return &entries_;
+}
+
+// -------------------------------------------------------------------
+
+// CmdRequest_KvRequest
+
+// required bytes key = 1;
+inline bool CmdRequest_KvRequest::has_key() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CmdRequest_KvRequest::set_has_key() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CmdRequest_KvRequest::clear_has_key() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdRequest_KvRequest::clear_key() {
+  if (key_ != &::google::protobuf::internal::kEmptyString) {
+    key_->clear();
+  }
+  clear_has_key();
+}
+inline const ::std::string& CmdRequest_KvRequest::key() const {
+  return *key_;
+}
+inline void CmdRequest_KvRequest::set_key(const ::std::string& value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void CmdRequest_KvRequest::set_key(const char* value) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(value);
+}
+inline void CmdRequest_KvRequest::set_key(const void* value, size_t size) {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  key_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CmdRequest_KvRequest::mutable_key() {
+  set_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    key_ = new ::std::string;
+  }
+  return key_;
+}
+inline ::std::string* CmdRequest_KvRequest::release_key() {
+  clear_has_key();
+  if (key_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = key_;
+    key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void CmdRequest_KvRequest::set_allocated_key(::std::string* key) {
+  if (key_ != &::google::protobuf::internal::kEmptyString) {
+    delete key_;
+  }
+  if (key) {
+    set_has_key();
+    key_ = key;
+  } else {
+    clear_has_key();
+    key_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// optional bytes value = 2;
+inline bool CmdRequest_KvRequest::has_value() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdRequest_KvRequest::set_has_value() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdRequest_KvRequest::clear_has_value() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void CmdRequest_KvRequest::clear_value() {
+  if (value_ != &::google::protobuf::internal::kEmptyString) {
+    value_->clear();
+  }
+  clear_has_value();
+}
+inline const ::std::string& CmdRequest_KvRequest::value() const {
+  return *value_;
+}
+inline void CmdRequest_KvRequest::set_value(const ::std::string& value) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void CmdRequest_KvRequest::set_value(const char* value) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(value);
+}
+inline void CmdRequest_KvRequest::set_value(const void* value, size_t size) {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  value_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CmdRequest_KvRequest::mutable_value() {
+  set_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    value_ = new ::std::string;
+  }
+  return value_;
+}
+inline ::std::string* CmdRequest_KvRequest::release_value() {
+  clear_has_value();
+  if (value_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = value_;
+    value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void CmdRequest_KvRequest::set_allocated_value(::std::string* value) {
+  if (value_ != &::google::protobuf::internal::kEmptyString) {
+    delete value_;
+  }
+  if (value) {
+    set_has_value();
+    value_ = value;
+  } else {
+    clear_has_value();
+    value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// -------------------------------------------------------------------
+
+// CmdRequest_LockRequest
+
+// required bytes name = 1;
+inline bool CmdRequest_LockRequest::has_name() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CmdRequest_LockRequest::set_has_name() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CmdRequest_LockRequest::clear_has_name() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdRequest_LockRequest::clear_name() {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
+    name_->clear();
+  }
+  clear_has_name();
+}
+inline const ::std::string& CmdRequest_LockRequest::name() const {
+  return *name_;
+}
+inline void CmdRequest_LockRequest::set_name(const ::std::string& value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void CmdRequest_LockRequest::set_name(const char* value) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(value);
+}
+inline void CmdRequest_LockRequest::set_name(const void* value, size_t size) {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  name_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CmdRequest_LockRequest::mutable_name() {
+  set_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    name_ = new ::std::string;
+  }
+  return name_;
+}
+inline ::std::string* CmdRequest_LockRequest::release_name() {
+  clear_has_name();
+  if (name_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = name_;
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void CmdRequest_LockRequest::set_allocated_name(::std::string* name) {
+  if (name_ != &::google::protobuf::internal::kEmptyString) {
+    delete name_;
+  }
+  if (name) {
+    set_has_name();
+    name_ = name;
+  } else {
+    clear_has_name();
+    name_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// required bytes holder = 2;
+inline bool CmdRequest_LockRequest::has_holder() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdRequest_LockRequest::set_has_holder() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdRequest_LockRequest::clear_has_holder() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void CmdRequest_LockRequest::clear_holder() {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    holder_->clear();
+  }
+  clear_has_holder();
+}
+inline const ::std::string& CmdRequest_LockRequest::holder() const {
+  return *holder_;
+}
+inline void CmdRequest_LockRequest::set_holder(const ::std::string& value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(value);
+}
+inline void CmdRequest_LockRequest::set_holder(const char* value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(value);
+}
+inline void CmdRequest_LockRequest::set_holder(const void* value, size_t size) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* CmdRequest_LockRequest::mutable_holder() {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  return holder_;
+}
+inline ::std::string* CmdRequest_LockRequest::release_holder() {
+  clear_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
+  } else {
+    ::std::string* temp = holder_;
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void CmdRequest_LockRequest::set_allocated_holder(::std::string* holder) {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    delete holder_;
+  }
+  if (holder) {
+    set_has_holder();
+    holder_ = holder;
+  } else {
+    clear_has_holder();
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+  }
+}
+
+// optional uint64 lease_end = 3;
+inline bool CmdRequest_LockRequest::has_lease_end() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void CmdRequest_LockRequest::set_has_lease_end() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void CmdRequest_LockRequest::clear_has_lease_end() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void CmdRequest_LockRequest::clear_lease_end() {
+  lease_end_ = GOOGLE_ULONGLONG(0);
+  clear_has_lease_end();
+}
+inline ::google::protobuf::uint64 CmdRequest_LockRequest::lease_end() const {
+  return lease_end_;
+}
+inline void CmdRequest_LockRequest::set_lease_end(::google::protobuf::uint64 value) {
+  set_has_lease_end();
+  lease_end_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -2517,91 +2903,15 @@ inline void CmdRequest::set_type(::floyd::Type value) {
   type_ = value;
 }
 
-// optional .floyd.CmdRequest.Kv kv = 2;
-inline bool CmdRequest::has_kv() const {
+// optional .floyd.CmdRequest.RequestVote request_vote = 2;
+inline bool CmdRequest::has_request_vote() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void CmdRequest::set_has_kv() {
+inline void CmdRequest::set_has_request_vote() {
   _has_bits_[0] |= 0x00000002u;
 }
-inline void CmdRequest::clear_has_kv() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void CmdRequest::clear_kv() {
-  if (kv_ != NULL) kv_->::floyd::CmdRequest_Kv::Clear();
-  clear_has_kv();
-}
-inline const ::floyd::CmdRequest_Kv& CmdRequest::kv() const {
-  return kv_ != NULL ? *kv_ : *default_instance_->kv_;
-}
-inline ::floyd::CmdRequest_Kv* CmdRequest::mutable_kv() {
-  set_has_kv();
-  if (kv_ == NULL) kv_ = new ::floyd::CmdRequest_Kv;
-  return kv_;
-}
-inline ::floyd::CmdRequest_Kv* CmdRequest::release_kv() {
-  clear_has_kv();
-  ::floyd::CmdRequest_Kv* temp = kv_;
-  kv_ = NULL;
-  return temp;
-}
-inline void CmdRequest::set_allocated_kv(::floyd::CmdRequest_Kv* kv) {
-  delete kv_;
-  kv_ = kv;
-  if (kv) {
-    set_has_kv();
-  } else {
-    clear_has_kv();
-  }
-}
-
-// optional .floyd.CmdRequest.User user = 3;
-inline bool CmdRequest::has_user() const {
-  return (_has_bits_[0] & 0x00000004u) != 0;
-}
-inline void CmdRequest::set_has_user() {
-  _has_bits_[0] |= 0x00000004u;
-}
-inline void CmdRequest::clear_has_user() {
-  _has_bits_[0] &= ~0x00000004u;
-}
-inline void CmdRequest::clear_user() {
-  if (user_ != NULL) user_->::floyd::CmdRequest_User::Clear();
-  clear_has_user();
-}
-inline const ::floyd::CmdRequest_User& CmdRequest::user() const {
-  return user_ != NULL ? *user_ : *default_instance_->user_;
-}
-inline ::floyd::CmdRequest_User* CmdRequest::mutable_user() {
-  set_has_user();
-  if (user_ == NULL) user_ = new ::floyd::CmdRequest_User;
-  return user_;
-}
-inline ::floyd::CmdRequest_User* CmdRequest::release_user() {
-  clear_has_user();
-  ::floyd::CmdRequest_User* temp = user_;
-  user_ = NULL;
-  return temp;
-}
-inline void CmdRequest::set_allocated_user(::floyd::CmdRequest_User* user) {
-  delete user_;
-  user_ = user;
-  if (user) {
-    set_has_user();
-  } else {
-    clear_has_user();
-  }
-}
-
-// optional .floyd.CmdRequest.RequestVote request_vote = 4;
-inline bool CmdRequest::has_request_vote() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void CmdRequest::set_has_request_vote() {
-  _has_bits_[0] |= 0x00000008u;
-}
 inline void CmdRequest::clear_has_request_vote() {
-  _has_bits_[0] &= ~0x00000008u;
+  _has_bits_[0] &= ~0x00000002u;
 }
 inline void CmdRequest::clear_request_vote() {
   if (request_vote_ != NULL) request_vote_->::floyd::CmdRequest_RequestVote::Clear();
@@ -2631,15 +2941,15 @@ inline void CmdRequest::set_allocated_request_vote(::floyd::CmdRequest_RequestVo
   }
 }
 
-// optional .floyd.CmdRequest.AppendEntries append_entries = 5;
+// optional .floyd.CmdRequest.AppendEntries append_entries = 3;
 inline bool CmdRequest::has_append_entries() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
+  return (_has_bits_[0] & 0x00000004u) != 0;
 }
 inline void CmdRequest::set_has_append_entries() {
-  _has_bits_[0] |= 0x00000010u;
+  _has_bits_[0] |= 0x00000004u;
 }
 inline void CmdRequest::clear_has_append_entries() {
-  _has_bits_[0] &= ~0x00000010u;
+  _has_bits_[0] &= ~0x00000004u;
 }
 inline void CmdRequest::clear_append_entries() {
   if (append_entries_ != NULL) append_entries_->::floyd::CmdRequest_AppendEntries::Clear();
@@ -2666,6 +2976,82 @@ inline void CmdRequest::set_allocated_append_entries(::floyd::CmdRequest_AppendE
     set_has_append_entries();
   } else {
     clear_has_append_entries();
+  }
+}
+
+// optional .floyd.CmdRequest.KvRequest kv_request = 4;
+inline bool CmdRequest::has_kv_request() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void CmdRequest::set_has_kv_request() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void CmdRequest::clear_has_kv_request() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void CmdRequest::clear_kv_request() {
+  if (kv_request_ != NULL) kv_request_->::floyd::CmdRequest_KvRequest::Clear();
+  clear_has_kv_request();
+}
+inline const ::floyd::CmdRequest_KvRequest& CmdRequest::kv_request() const {
+  return kv_request_ != NULL ? *kv_request_ : *default_instance_->kv_request_;
+}
+inline ::floyd::CmdRequest_KvRequest* CmdRequest::mutable_kv_request() {
+  set_has_kv_request();
+  if (kv_request_ == NULL) kv_request_ = new ::floyd::CmdRequest_KvRequest;
+  return kv_request_;
+}
+inline ::floyd::CmdRequest_KvRequest* CmdRequest::release_kv_request() {
+  clear_has_kv_request();
+  ::floyd::CmdRequest_KvRequest* temp = kv_request_;
+  kv_request_ = NULL;
+  return temp;
+}
+inline void CmdRequest::set_allocated_kv_request(::floyd::CmdRequest_KvRequest* kv_request) {
+  delete kv_request_;
+  kv_request_ = kv_request;
+  if (kv_request) {
+    set_has_kv_request();
+  } else {
+    clear_has_kv_request();
+  }
+}
+
+// optional .floyd.CmdRequest.LockRequest lock_request = 5;
+inline bool CmdRequest::has_lock_request() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void CmdRequest::set_has_lock_request() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void CmdRequest::clear_has_lock_request() {
+  _has_bits_[0] &= ~0x00000010u;
+}
+inline void CmdRequest::clear_lock_request() {
+  if (lock_request_ != NULL) lock_request_->::floyd::CmdRequest_LockRequest::Clear();
+  clear_has_lock_request();
+}
+inline const ::floyd::CmdRequest_LockRequest& CmdRequest::lock_request() const {
+  return lock_request_ != NULL ? *lock_request_ : *default_instance_->lock_request_;
+}
+inline ::floyd::CmdRequest_LockRequest* CmdRequest::mutable_lock_request() {
+  set_has_lock_request();
+  if (lock_request_ == NULL) lock_request_ = new ::floyd::CmdRequest_LockRequest;
+  return lock_request_;
+}
+inline ::floyd::CmdRequest_LockRequest* CmdRequest::release_lock_request() {
+  clear_has_lock_request();
+  ::floyd::CmdRequest_LockRequest* temp = lock_request_;
+  lock_request_ = NULL;
+  return temp;
+}
+inline void CmdRequest::set_allocated_lock_request(::floyd::CmdRequest_LockRequest* lock_request) {
+  delete lock_request_;
+  lock_request_ = lock_request;
+  if (lock_request) {
+    set_has_lock_request();
+  } else {
+    clear_has_lock_request();
   }
 }
 
@@ -2709,56 +3095,174 @@ inline void CmdRequest::set_allocated_server_status(::floyd::CmdRequest_ServerSt
 
 // -------------------------------------------------------------------
 
-// CmdResponse_Kv
+// CmdResponse_RequestVoteResponse
 
-// optional bytes value = 1;
-inline bool CmdResponse_Kv::has_value() const {
+// required uint64 term = 1;
+inline bool CmdResponse_RequestVoteResponse::has_term() const {
   return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void CmdResponse_Kv::set_has_value() {
+inline void CmdResponse_RequestVoteResponse::set_has_term() {
   _has_bits_[0] |= 0x00000001u;
 }
-inline void CmdResponse_Kv::clear_has_value() {
+inline void CmdResponse_RequestVoteResponse::clear_has_term() {
   _has_bits_[0] &= ~0x00000001u;
 }
-inline void CmdResponse_Kv::clear_value() {
+inline void CmdResponse_RequestVoteResponse::clear_term() {
+  term_ = GOOGLE_ULONGLONG(0);
+  clear_has_term();
+}
+inline ::google::protobuf::uint64 CmdResponse_RequestVoteResponse::term() const {
+  return term_;
+}
+inline void CmdResponse_RequestVoteResponse::set_term(::google::protobuf::uint64 value) {
+  set_has_term();
+  term_ = value;
+}
+
+// required bool vote_granted = 2;
+inline bool CmdResponse_RequestVoteResponse::has_vote_granted() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdResponse_RequestVoteResponse::set_has_vote_granted() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdResponse_RequestVoteResponse::clear_has_vote_granted() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void CmdResponse_RequestVoteResponse::clear_vote_granted() {
+  vote_granted_ = false;
+  clear_has_vote_granted();
+}
+inline bool CmdResponse_RequestVoteResponse::vote_granted() const {
+  return vote_granted_;
+}
+inline void CmdResponse_RequestVoteResponse::set_vote_granted(bool value) {
+  set_has_vote_granted();
+  vote_granted_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// CmdResponse_AppendEntriesResponse
+
+// required uint64 term = 1;
+inline bool CmdResponse_AppendEntriesResponse::has_term() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CmdResponse_AppendEntriesResponse::set_has_term() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_has_term() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_term() {
+  term_ = GOOGLE_ULONGLONG(0);
+  clear_has_term();
+}
+inline ::google::protobuf::uint64 CmdResponse_AppendEntriesResponse::term() const {
+  return term_;
+}
+inline void CmdResponse_AppendEntriesResponse::set_term(::google::protobuf::uint64 value) {
+  set_has_term();
+  term_ = value;
+}
+
+// required bool success = 2;
+inline bool CmdResponse_AppendEntriesResponse::has_success() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
+}
+inline void CmdResponse_AppendEntriesResponse::set_has_success() {
+  _has_bits_[0] |= 0x00000002u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_has_success() {
+  _has_bits_[0] &= ~0x00000002u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_success() {
+  success_ = false;
+  clear_has_success();
+}
+inline bool CmdResponse_AppendEntriesResponse::success() const {
+  return success_;
+}
+inline void CmdResponse_AppendEntriesResponse::set_success(bool value) {
+  set_has_success();
+  success_ = value;
+}
+
+// optional uint64 last_log_index = 3;
+inline bool CmdResponse_AppendEntriesResponse::has_last_log_index() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void CmdResponse_AppendEntriesResponse::set_has_last_log_index() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_has_last_log_index() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void CmdResponse_AppendEntriesResponse::clear_last_log_index() {
+  last_log_index_ = GOOGLE_ULONGLONG(0);
+  clear_has_last_log_index();
+}
+inline ::google::protobuf::uint64 CmdResponse_AppendEntriesResponse::last_log_index() const {
+  return last_log_index_;
+}
+inline void CmdResponse_AppendEntriesResponse::set_last_log_index(::google::protobuf::uint64 value) {
+  set_has_last_log_index();
+  last_log_index_ = value;
+}
+
+// -------------------------------------------------------------------
+
+// CmdResponse_KvResponse
+
+// optional bytes value = 1;
+inline bool CmdResponse_KvResponse::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void CmdResponse_KvResponse::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void CmdResponse_KvResponse::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void CmdResponse_KvResponse::clear_value() {
   if (value_ != &::google::protobuf::internal::kEmptyString) {
     value_->clear();
   }
   clear_has_value();
 }
-inline const ::std::string& CmdResponse_Kv::value() const {
+inline const ::std::string& CmdResponse_KvResponse::value() const {
   return *value_;
 }
-inline void CmdResponse_Kv::set_value(const ::std::string& value) {
+inline void CmdResponse_KvResponse::set_value(const ::std::string& value) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(value);
 }
-inline void CmdResponse_Kv::set_value(const char* value) {
+inline void CmdResponse_KvResponse::set_value(const char* value) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(value);
 }
-inline void CmdResponse_Kv::set_value(const void* value, size_t size) {
+inline void CmdResponse_KvResponse::set_value(const void* value, size_t size) {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   value_->assign(reinterpret_cast<const char*>(value), size);
 }
-inline ::std::string* CmdResponse_Kv::mutable_value() {
+inline ::std::string* CmdResponse_KvResponse::mutable_value() {
   set_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     value_ = new ::std::string;
   }
   return value_;
 }
-inline ::std::string* CmdResponse_Kv::release_value() {
+inline ::std::string* CmdResponse_KvResponse::release_value() {
   clear_has_value();
   if (value_ == &::google::protobuf::internal::kEmptyString) {
     return NULL;
@@ -2768,7 +3272,7 @@ inline ::std::string* CmdResponse_Kv::release_value() {
     return temp;
   }
 }
-inline void CmdResponse_Kv::set_allocated_value(::std::string* value) {
+inline void CmdResponse_KvResponse::set_allocated_value(::std::string* value) {
   if (value_ != &::google::protobuf::internal::kEmptyString) {
     delete value_;
   }
@@ -2779,35 +3283,6 @@ inline void CmdResponse_Kv::set_allocated_value(::std::string* value) {
     clear_has_value();
     value_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   }
-}
-
-// -------------------------------------------------------------------
-
-// CmdResponse_Kvs
-
-// repeated .floyd.CmdResponse.Kv kv = 1;
-inline int CmdResponse_Kvs::kv_size() const {
-  return kv_.size();
-}
-inline void CmdResponse_Kvs::clear_kv() {
-  kv_.Clear();
-}
-inline const ::floyd::CmdResponse_Kv& CmdResponse_Kvs::kv(int index) const {
-  return kv_.Get(index);
-}
-inline ::floyd::CmdResponse_Kv* CmdResponse_Kvs::mutable_kv(int index) {
-  return kv_.Mutable(index);
-}
-inline ::floyd::CmdResponse_Kv* CmdResponse_Kvs::add_kv() {
-  return kv_.Add();
-}
-inline const ::google::protobuf::RepeatedPtrField< ::floyd::CmdResponse_Kv >&
-CmdResponse_Kvs::kv() const {
-  return kv_;
-}
-inline ::google::protobuf::RepeatedPtrField< ::floyd::CmdResponse_Kv >*
-CmdResponse_Kvs::mutable_kv() {
-  return &kv_;
 }
 
 // -------------------------------------------------------------------
@@ -3156,100 +3631,26 @@ inline void CmdResponse_ServerStatus::set_last_log_index(::google::protobuf::uin
   last_log_index_ = value;
 }
 
-// optional uint64 last_apply_index = 10;
-inline bool CmdResponse_ServerStatus::has_last_apply_index() const {
+// optional uint64 last_applied = 10;
+inline bool CmdResponse_ServerStatus::has_last_applied() const {
   return (_has_bits_[0] & 0x00000200u) != 0;
 }
-inline void CmdResponse_ServerStatus::set_has_last_apply_index() {
+inline void CmdResponse_ServerStatus::set_has_last_applied() {
   _has_bits_[0] |= 0x00000200u;
 }
-inline void CmdResponse_ServerStatus::clear_has_last_apply_index() {
+inline void CmdResponse_ServerStatus::clear_has_last_applied() {
   _has_bits_[0] &= ~0x00000200u;
 }
-inline void CmdResponse_ServerStatus::clear_last_apply_index() {
-  last_apply_index_ = GOOGLE_ULONGLONG(0);
-  clear_has_last_apply_index();
+inline void CmdResponse_ServerStatus::clear_last_applied() {
+  last_applied_ = GOOGLE_ULONGLONG(0);
+  clear_has_last_applied();
 }
-inline ::google::protobuf::uint64 CmdResponse_ServerStatus::last_apply_index() const {
-  return last_apply_index_;
+inline ::google::protobuf::uint64 CmdResponse_ServerStatus::last_applied() const {
+  return last_applied_;
 }
-inline void CmdResponse_ServerStatus::set_last_apply_index(::google::protobuf::uint64 value) {
-  set_has_last_apply_index();
-  last_apply_index_ = value;
-}
-
-// -------------------------------------------------------------------
-
-// CmdResponse_RequestVote
-
-// required uint64 term = 1;
-inline bool CmdResponse_RequestVote::has_term() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void CmdResponse_RequestVote::set_has_term() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void CmdResponse_RequestVote::clear_has_term() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void CmdResponse_RequestVote::clear_term() {
-  term_ = GOOGLE_ULONGLONG(0);
-  clear_has_term();
-}
-inline ::google::protobuf::uint64 CmdResponse_RequestVote::term() const {
-  return term_;
-}
-inline void CmdResponse_RequestVote::set_term(::google::protobuf::uint64 value) {
-  set_has_term();
-  term_ = value;
-}
-
-// -------------------------------------------------------------------
-
-// CmdResponse_AppendEntries
-
-// required uint64 term = 1;
-inline bool CmdResponse_AppendEntries::has_term() const {
-  return (_has_bits_[0] & 0x00000001u) != 0;
-}
-inline void CmdResponse_AppendEntries::set_has_term() {
-  _has_bits_[0] |= 0x00000001u;
-}
-inline void CmdResponse_AppendEntries::clear_has_term() {
-  _has_bits_[0] &= ~0x00000001u;
-}
-inline void CmdResponse_AppendEntries::clear_term() {
-  term_ = GOOGLE_ULONGLONG(0);
-  clear_has_term();
-}
-inline ::google::protobuf::uint64 CmdResponse_AppendEntries::term() const {
-  return term_;
-}
-inline void CmdResponse_AppendEntries::set_term(::google::protobuf::uint64 value) {
-  set_has_term();
-  term_ = value;
-}
-
-// required uint64 last_log_index = 2;
-inline bool CmdResponse_AppendEntries::has_last_log_index() const {
-  return (_has_bits_[0] & 0x00000002u) != 0;
-}
-inline void CmdResponse_AppendEntries::set_has_last_log_index() {
-  _has_bits_[0] |= 0x00000002u;
-}
-inline void CmdResponse_AppendEntries::clear_has_last_log_index() {
-  _has_bits_[0] &= ~0x00000002u;
-}
-inline void CmdResponse_AppendEntries::clear_last_log_index() {
-  last_log_index_ = GOOGLE_ULONGLONG(0);
-  clear_has_last_log_index();
-}
-inline ::google::protobuf::uint64 CmdResponse_AppendEntries::last_log_index() const {
-  return last_log_index_;
-}
-inline void CmdResponse_AppendEntries::set_last_log_index(::google::protobuf::uint64 value) {
-  set_has_last_log_index();
-  last_log_index_ = value;
+inline void CmdResponse_ServerStatus::set_last_applied(::google::protobuf::uint64 value) {
+  set_has_last_applied();
+  last_applied_ = value;
 }
 
 // -------------------------------------------------------------------
@@ -3279,7 +3680,7 @@ inline void CmdResponse::set_type(::floyd::Type value) {
   type_ = value;
 }
 
-// required .floyd.StatusCode code = 2;
+// optional .floyd.StatusCode code = 2;
 inline bool CmdResponse::has_code() const {
   return (_has_bits_[0] & 0x00000002u) != 0;
 }
@@ -3302,15 +3703,91 @@ inline void CmdResponse::set_code(::floyd::StatusCode value) {
   code_ = value;
 }
 
-// optional bytes msg = 3;
-inline bool CmdResponse::has_msg() const {
+// optional .floyd.CmdResponse.RequestVoteResponse request_vote_res = 3;
+inline bool CmdResponse::has_request_vote_res() const {
   return (_has_bits_[0] & 0x00000004u) != 0;
 }
-inline void CmdResponse::set_has_msg() {
+inline void CmdResponse::set_has_request_vote_res() {
   _has_bits_[0] |= 0x00000004u;
 }
-inline void CmdResponse::clear_has_msg() {
+inline void CmdResponse::clear_has_request_vote_res() {
   _has_bits_[0] &= ~0x00000004u;
+}
+inline void CmdResponse::clear_request_vote_res() {
+  if (request_vote_res_ != NULL) request_vote_res_->::floyd::CmdResponse_RequestVoteResponse::Clear();
+  clear_has_request_vote_res();
+}
+inline const ::floyd::CmdResponse_RequestVoteResponse& CmdResponse::request_vote_res() const {
+  return request_vote_res_ != NULL ? *request_vote_res_ : *default_instance_->request_vote_res_;
+}
+inline ::floyd::CmdResponse_RequestVoteResponse* CmdResponse::mutable_request_vote_res() {
+  set_has_request_vote_res();
+  if (request_vote_res_ == NULL) request_vote_res_ = new ::floyd::CmdResponse_RequestVoteResponse;
+  return request_vote_res_;
+}
+inline ::floyd::CmdResponse_RequestVoteResponse* CmdResponse::release_request_vote_res() {
+  clear_has_request_vote_res();
+  ::floyd::CmdResponse_RequestVoteResponse* temp = request_vote_res_;
+  request_vote_res_ = NULL;
+  return temp;
+}
+inline void CmdResponse::set_allocated_request_vote_res(::floyd::CmdResponse_RequestVoteResponse* request_vote_res) {
+  delete request_vote_res_;
+  request_vote_res_ = request_vote_res;
+  if (request_vote_res) {
+    set_has_request_vote_res();
+  } else {
+    clear_has_request_vote_res();
+  }
+}
+
+// optional .floyd.CmdResponse.AppendEntriesResponse append_entries_res = 4;
+inline bool CmdResponse::has_append_entries_res() const {
+  return (_has_bits_[0] & 0x00000008u) != 0;
+}
+inline void CmdResponse::set_has_append_entries_res() {
+  _has_bits_[0] |= 0x00000008u;
+}
+inline void CmdResponse::clear_has_append_entries_res() {
+  _has_bits_[0] &= ~0x00000008u;
+}
+inline void CmdResponse::clear_append_entries_res() {
+  if (append_entries_res_ != NULL) append_entries_res_->::floyd::CmdResponse_AppendEntriesResponse::Clear();
+  clear_has_append_entries_res();
+}
+inline const ::floyd::CmdResponse_AppendEntriesResponse& CmdResponse::append_entries_res() const {
+  return append_entries_res_ != NULL ? *append_entries_res_ : *default_instance_->append_entries_res_;
+}
+inline ::floyd::CmdResponse_AppendEntriesResponse* CmdResponse::mutable_append_entries_res() {
+  set_has_append_entries_res();
+  if (append_entries_res_ == NULL) append_entries_res_ = new ::floyd::CmdResponse_AppendEntriesResponse;
+  return append_entries_res_;
+}
+inline ::floyd::CmdResponse_AppendEntriesResponse* CmdResponse::release_append_entries_res() {
+  clear_has_append_entries_res();
+  ::floyd::CmdResponse_AppendEntriesResponse* temp = append_entries_res_;
+  append_entries_res_ = NULL;
+  return temp;
+}
+inline void CmdResponse::set_allocated_append_entries_res(::floyd::CmdResponse_AppendEntriesResponse* append_entries_res) {
+  delete append_entries_res_;
+  append_entries_res_ = append_entries_res;
+  if (append_entries_res) {
+    set_has_append_entries_res();
+  } else {
+    clear_has_append_entries_res();
+  }
+}
+
+// optional bytes msg = 5;
+inline bool CmdResponse::has_msg() const {
+  return (_has_bits_[0] & 0x00000010u) != 0;
+}
+inline void CmdResponse::set_has_msg() {
+  _has_bits_[0] |= 0x00000010u;
+}
+inline void CmdResponse::clear_has_msg() {
+  _has_bits_[0] &= ~0x00000010u;
 }
 inline void CmdResponse::clear_msg() {
   if (msg_ != &::google::protobuf::internal::kEmptyString) {
@@ -3372,91 +3849,53 @@ inline void CmdResponse::set_allocated_msg(::std::string* msg) {
   }
 }
 
-// optional .floyd.CmdResponse.Kv kv = 4;
-inline bool CmdResponse::has_kv() const {
-  return (_has_bits_[0] & 0x00000008u) != 0;
-}
-inline void CmdResponse::set_has_kv() {
-  _has_bits_[0] |= 0x00000008u;
-}
-inline void CmdResponse::clear_has_kv() {
-  _has_bits_[0] &= ~0x00000008u;
-}
-inline void CmdResponse::clear_kv() {
-  if (kv_ != NULL) kv_->::floyd::CmdResponse_Kv::Clear();
-  clear_has_kv();
-}
-inline const ::floyd::CmdResponse_Kv& CmdResponse::kv() const {
-  return kv_ != NULL ? *kv_ : *default_instance_->kv_;
-}
-inline ::floyd::CmdResponse_Kv* CmdResponse::mutable_kv() {
-  set_has_kv();
-  if (kv_ == NULL) kv_ = new ::floyd::CmdResponse_Kv;
-  return kv_;
-}
-inline ::floyd::CmdResponse_Kv* CmdResponse::release_kv() {
-  clear_has_kv();
-  ::floyd::CmdResponse_Kv* temp = kv_;
-  kv_ = NULL;
-  return temp;
-}
-inline void CmdResponse::set_allocated_kv(::floyd::CmdResponse_Kv* kv) {
-  delete kv_;
-  kv_ = kv;
-  if (kv) {
-    set_has_kv();
-  } else {
-    clear_has_kv();
-  }
-}
-
-// optional .floyd.CmdResponse.Kvs kvs = 5;
-inline bool CmdResponse::has_kvs() const {
-  return (_has_bits_[0] & 0x00000010u) != 0;
-}
-inline void CmdResponse::set_has_kvs() {
-  _has_bits_[0] |= 0x00000010u;
-}
-inline void CmdResponse::clear_has_kvs() {
-  _has_bits_[0] &= ~0x00000010u;
-}
-inline void CmdResponse::clear_kvs() {
-  if (kvs_ != NULL) kvs_->::floyd::CmdResponse_Kvs::Clear();
-  clear_has_kvs();
-}
-inline const ::floyd::CmdResponse_Kvs& CmdResponse::kvs() const {
-  return kvs_ != NULL ? *kvs_ : *default_instance_->kvs_;
-}
-inline ::floyd::CmdResponse_Kvs* CmdResponse::mutable_kvs() {
-  set_has_kvs();
-  if (kvs_ == NULL) kvs_ = new ::floyd::CmdResponse_Kvs;
-  return kvs_;
-}
-inline ::floyd::CmdResponse_Kvs* CmdResponse::release_kvs() {
-  clear_has_kvs();
-  ::floyd::CmdResponse_Kvs* temp = kvs_;
-  kvs_ = NULL;
-  return temp;
-}
-inline void CmdResponse::set_allocated_kvs(::floyd::CmdResponse_Kvs* kvs) {
-  delete kvs_;
-  kvs_ = kvs;
-  if (kvs) {
-    set_has_kvs();
-  } else {
-    clear_has_kvs();
-  }
-}
-
-// optional .floyd.CmdResponse.ServerStatus server_status = 6;
-inline bool CmdResponse::has_server_status() const {
+// optional .floyd.CmdResponse.KvResponse kv_response = 6;
+inline bool CmdResponse::has_kv_response() const {
   return (_has_bits_[0] & 0x00000020u) != 0;
 }
-inline void CmdResponse::set_has_server_status() {
+inline void CmdResponse::set_has_kv_response() {
   _has_bits_[0] |= 0x00000020u;
 }
-inline void CmdResponse::clear_has_server_status() {
+inline void CmdResponse::clear_has_kv_response() {
   _has_bits_[0] &= ~0x00000020u;
+}
+inline void CmdResponse::clear_kv_response() {
+  if (kv_response_ != NULL) kv_response_->::floyd::CmdResponse_KvResponse::Clear();
+  clear_has_kv_response();
+}
+inline const ::floyd::CmdResponse_KvResponse& CmdResponse::kv_response() const {
+  return kv_response_ != NULL ? *kv_response_ : *default_instance_->kv_response_;
+}
+inline ::floyd::CmdResponse_KvResponse* CmdResponse::mutable_kv_response() {
+  set_has_kv_response();
+  if (kv_response_ == NULL) kv_response_ = new ::floyd::CmdResponse_KvResponse;
+  return kv_response_;
+}
+inline ::floyd::CmdResponse_KvResponse* CmdResponse::release_kv_response() {
+  clear_has_kv_response();
+  ::floyd::CmdResponse_KvResponse* temp = kv_response_;
+  kv_response_ = NULL;
+  return temp;
+}
+inline void CmdResponse::set_allocated_kv_response(::floyd::CmdResponse_KvResponse* kv_response) {
+  delete kv_response_;
+  kv_response_ = kv_response;
+  if (kv_response) {
+    set_has_kv_response();
+  } else {
+    clear_has_kv_response();
+  }
+}
+
+// optional .floyd.CmdResponse.ServerStatus server_status = 7;
+inline bool CmdResponse::has_server_status() const {
+  return (_has_bits_[0] & 0x00000040u) != 0;
+}
+inline void CmdResponse::set_has_server_status() {
+  _has_bits_[0] |= 0x00000040u;
+}
+inline void CmdResponse::clear_has_server_status() {
+  _has_bits_[0] &= ~0x00000040u;
 }
 inline void CmdResponse::clear_server_status() {
   if (server_status_ != NULL) server_status_->::floyd::CmdResponse_ServerStatus::Clear();
@@ -3486,80 +3925,100 @@ inline void CmdResponse::set_allocated_server_status(::floyd::CmdResponse_Server
   }
 }
 
-// optional .floyd.CmdResponse.RequestVote request_vote = 7;
-inline bool CmdResponse::has_request_vote() const {
-  return (_has_bits_[0] & 0x00000040u) != 0;
+// -------------------------------------------------------------------
+
+// Lock
+
+// required bytes holder = 1;
+inline bool Lock::has_holder() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
 }
-inline void CmdResponse::set_has_request_vote() {
-  _has_bits_[0] |= 0x00000040u;
+inline void Lock::set_has_holder() {
+  _has_bits_[0] |= 0x00000001u;
 }
-inline void CmdResponse::clear_has_request_vote() {
-  _has_bits_[0] &= ~0x00000040u;
+inline void Lock::clear_has_holder() {
+  _has_bits_[0] &= ~0x00000001u;
 }
-inline void CmdResponse::clear_request_vote() {
-  if (request_vote_ != NULL) request_vote_->::floyd::CmdResponse_RequestVote::Clear();
-  clear_has_request_vote();
+inline void Lock::clear_holder() {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    holder_->clear();
+  }
+  clear_has_holder();
 }
-inline const ::floyd::CmdResponse_RequestVote& CmdResponse::request_vote() const {
-  return request_vote_ != NULL ? *request_vote_ : *default_instance_->request_vote_;
+inline const ::std::string& Lock::holder() const {
+  return *holder_;
 }
-inline ::floyd::CmdResponse_RequestVote* CmdResponse::mutable_request_vote() {
-  set_has_request_vote();
-  if (request_vote_ == NULL) request_vote_ = new ::floyd::CmdResponse_RequestVote;
-  return request_vote_;
+inline void Lock::set_holder(const ::std::string& value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(value);
 }
-inline ::floyd::CmdResponse_RequestVote* CmdResponse::release_request_vote() {
-  clear_has_request_vote();
-  ::floyd::CmdResponse_RequestVote* temp = request_vote_;
-  request_vote_ = NULL;
-  return temp;
+inline void Lock::set_holder(const char* value) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(value);
 }
-inline void CmdResponse::set_allocated_request_vote(::floyd::CmdResponse_RequestVote* request_vote) {
-  delete request_vote_;
-  request_vote_ = request_vote;
-  if (request_vote) {
-    set_has_request_vote();
+inline void Lock::set_holder(const void* value, size_t size) {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  holder_->assign(reinterpret_cast<const char*>(value), size);
+}
+inline ::std::string* Lock::mutable_holder() {
+  set_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    holder_ = new ::std::string;
+  }
+  return holder_;
+}
+inline ::std::string* Lock::release_holder() {
+  clear_has_holder();
+  if (holder_ == &::google::protobuf::internal::kEmptyString) {
+    return NULL;
   } else {
-    clear_has_request_vote();
+    ::std::string* temp = holder_;
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
+    return temp;
+  }
+}
+inline void Lock::set_allocated_holder(::std::string* holder) {
+  if (holder_ != &::google::protobuf::internal::kEmptyString) {
+    delete holder_;
+  }
+  if (holder) {
+    set_has_holder();
+    holder_ = holder;
+  } else {
+    clear_has_holder();
+    holder_ = const_cast< ::std::string*>(&::google::protobuf::internal::kEmptyString);
   }
 }
 
-// optional .floyd.CmdResponse.AppendEntries append_entries = 8;
-inline bool CmdResponse::has_append_entries() const {
-  return (_has_bits_[0] & 0x00000080u) != 0;
+// required uint64 lease_end = 2;
+inline bool Lock::has_lease_end() const {
+  return (_has_bits_[0] & 0x00000002u) != 0;
 }
-inline void CmdResponse::set_has_append_entries() {
-  _has_bits_[0] |= 0x00000080u;
+inline void Lock::set_has_lease_end() {
+  _has_bits_[0] |= 0x00000002u;
 }
-inline void CmdResponse::clear_has_append_entries() {
-  _has_bits_[0] &= ~0x00000080u;
+inline void Lock::clear_has_lease_end() {
+  _has_bits_[0] &= ~0x00000002u;
 }
-inline void CmdResponse::clear_append_entries() {
-  if (append_entries_ != NULL) append_entries_->::floyd::CmdResponse_AppendEntries::Clear();
-  clear_has_append_entries();
+inline void Lock::clear_lease_end() {
+  lease_end_ = GOOGLE_ULONGLONG(0);
+  clear_has_lease_end();
 }
-inline const ::floyd::CmdResponse_AppendEntries& CmdResponse::append_entries() const {
-  return append_entries_ != NULL ? *append_entries_ : *default_instance_->append_entries_;
+inline ::google::protobuf::uint64 Lock::lease_end() const {
+  return lease_end_;
 }
-inline ::floyd::CmdResponse_AppendEntries* CmdResponse::mutable_append_entries() {
-  set_has_append_entries();
-  if (append_entries_ == NULL) append_entries_ = new ::floyd::CmdResponse_AppendEntries;
-  return append_entries_;
-}
-inline ::floyd::CmdResponse_AppendEntries* CmdResponse::release_append_entries() {
-  clear_has_append_entries();
-  ::floyd::CmdResponse_AppendEntries* temp = append_entries_;
-  append_entries_ = NULL;
-  return temp;
-}
-inline void CmdResponse::set_allocated_append_entries(::floyd::CmdResponse_AppendEntries* append_entries) {
-  delete append_entries_;
-  append_entries_ = append_entries;
-  if (append_entries) {
-    set_has_append_entries();
-  } else {
-    clear_has_append_entries();
-  }
+inline void Lock::set_lease_end(::google::protobuf::uint64 value) {
+  set_has_lease_end();
+  lease_end_ = value;
 }
 
 
@@ -3571,6 +4030,10 @@ inline void CmdResponse::set_allocated_append_entries(::floyd::CmdResponse_Appen
 namespace google {
 namespace protobuf {
 
+template <>
+inline const EnumDescriptor* GetEnumDescriptor< ::floyd::Entry_OpType>() {
+  return ::floyd::Entry_OpType_descriptor();
+}
 template <>
 inline const EnumDescriptor* GetEnumDescriptor< ::floyd::Type>() {
   return ::floyd::Type_descriptor();

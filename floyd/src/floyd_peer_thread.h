@@ -1,56 +1,101 @@
-#ifndef FLOYD_PEER_THREAD_H_
-#define FLOYD_PEER_THREAD_H_
+// Copyright (c) 2015-present, Qihoo, Inc.  All rights reserved.
+// This source code is licensed under the BSD-style license found in the
+// LICENSE file in the root directory of this source tree. An additional grant
+// of patent rights can be found in the PATENTS file in the same directory.
 
-#include "floyd/src/floyd_context.h"
+#ifndef FLOYD_SRC_FLOYD_PEER_THREAD_H_
+#define FLOYD_SRC_FLOYD_PEER_THREAD_H_
+
+#include <string>
+#include <map>
 
 #include "slash/include/slash_status.h"
 #include "pink/include/bg_thread.h"
+
+#include "floyd/src/floyd_context.h"
 
 namespace floyd {
 
 using slash::Status;
 
-class Peer;
-
-class FloydContext;
+class RaftMeta;
 class FloydPrimary;
-//class FloydApply;
-class Log;
+class RaftLog;
 class ClientPool;
+class FloydApply;
+class Peer;
+typedef std::map<std::string, Peer*> PeersSet;
 
-class Peer {
+class Peer  {
  public:
-  Peer(std::string server, FloydContext* context, FloydPrimary* primary,
-       Log* log, ClientPool* pool);
+  Peer(std::string server, FloydContext* context, FloydPrimary* primary, RaftMeta* raft_meta,
+      RaftLog* raft_log, ClientPool* pool, FloydApply* apply, const Options& options, Logger* info_log);
   ~Peer();
 
-  int StartThread();
+  int Start();
+  int Stop();
 
   // Apend Entries
+  // call by other thread, put job to peer_thread's bg_thread_
   void AddAppendEntriesTask();
-  void AddHeartBeatTask();
-  void AddBecomeLeaderTask();
-  static void DoAppendEntries(void *arg);
-  Status AppendEntries();
-
-  // Request Vote
   void AddRequestVoteTask();
-  Status RequestVote();
-  static void DoRequestVote(void *arg);
+
+  /*
+   * the two main RPC call in raft consensus protocol is here
+   * AppendEntriesRPC
+   * RequestVoteRPC
+   * the response to these two RPC at floyd_impl.h
+   */
+  static void AppendEntriesRPCWrapper(void *arg);
+  void AppendEntriesRPC();
+  // Request Vote
+  static void RequestVoteRPCWrapper(void *arg);
+  void RequestVoteRPC();
 
   uint64_t GetMatchIndex();
-  void set_next_index(uint64_t next_index);
-  uint64_t get_next_index();
+
+  void set_next_index(const uint64_t next_index) {
+    next_index_ = next_index;
+  }
+  uint64_t next_index() {
+    return next_index_;
+  }
+
+  void set_match_index(const uint64_t match_index) {
+    match_index_ = match_index;
+  }
+  uint64_t match_index() {
+    return match_index_;
+  }
+
+  void set_peers(const PeersSet &peers) {
+    peers_ = peers;
+  }
+  std::string peer_addr() const {
+    return peer_addr_;
+  }
 
  private:
+  bool CheckAndVote(uint64_t vote_term);
+  uint64_t QuorumMatchIndex();
+  void AdvanceLeaderCommitIndex();
+  void UpdatePeerInfo();
 
-  std::string server_;
+  std::string peer_addr_;
   FloydContext* context_;
   FloydPrimary* primary_;
-  Log* log_;
+  RaftMeta* raft_meta_;
+  RaftLog* raft_log_;
   ClientPool* pool_;
+  FloydApply* apply_;
+  Options options_;
+  Logger* info_log_;
+
+  PeersSet peers_;
 
   std::atomic<uint64_t> next_index_;
+  std::atomic<uint64_t> match_index_;
+  uint64_t peer_last_op_time;
 
   pink::BGThread bg_thread_;
 
@@ -59,5 +104,5 @@ class Peer {
   void operator=(const Peer&);
 };
 
-} // namespace floyd
-#endif
+}  // namespace floyd
+#endif   // FLOYD_SRC_FLOYD_PEER_THREAD_H_

@@ -26,3 +26,17 @@
 *.exe
 *.out
 *.app
+gmon.out
+
+# Examples
+floyd/example/kv/sdk.pb.cc
+floyd/example/kv/sdk.pb.h
+*cpt
+*read_floyd
+*read_rock
+*t
+*t1
+*t2
+
+floyd/src/build_version.cc
+floyd/example/redis/deploy.sh

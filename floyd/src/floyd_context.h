@@ -1,10 +1,17 @@
-#ifndef FLOYD_CONTEXT_H_
-#define FLOYD_CONTEXT_H_
+// Copyright (c) 2015-present, Qihoo, Inc.  All rights reserved.
+// This source code is licensed under the BSD-style license found in the
+// LICENSE file in the root directory of this source tree. An additional grant
+// of patent rights can be found in the PATENTS file in the same directory.
+
+#ifndef FLOYD_SRC_FLOYD_CONTEXT_H_
+#define FLOYD_SRC_FLOYD_CONTEXT_H_
 
 #include <pthread.h>
 
+#include <string>
+
 #include "floyd/include/floyd_options.h"
-#include "floyd/src/file_log.h"
+#include "floyd/src/raft_log.h"
 
 #include "slash/include/slash_status.h"
 #include "slash/include/slash_mutex.h"
@@ -18,128 +25,51 @@ enum Role {
   kCandidate = 1,
   kLeader = 2,
 };
+class RaftMeta;
+/*
+ * we use FloydContext to avoid passing the floyd_impl's this point to other thread
+ */
+struct FloydContext {
+  // Role related
+  explicit FloydContext(const Options& _options)
+    : options(_options),
+      voted_for_ip(""),
+      voted_for_port(0),
+      leader_ip(""),
+      leader_port(0),
+      vote_quorum(0),
+      commit_index(0),
+      last_applied(0),
+      last_op_time(0),
+      apply_cond(&apply_mu) {}
 
-class Logger;
-
-class FloydContext {
- public:
-  FloydContext(const Options& opt, Log* log, Logger* info_log);
-  ~FloydContext();
-
-  void RecoverInit();
-  Log* log() {
-    return log_;
-  }
-
-  Logger* info_log() {
-    return info_log_;
-  }
-
-  /* Role related */
-  std::pair<std::string, int> leader_node() {
-    slash::RWLock l(&stat_rw_, false);
-    return {leader_ip_, leader_port_};
-  }
-
-  std::pair<std::string, int> voted_for_node() {
-    slash::RWLock l(&stat_rw_, false);
-    return {voted_for_ip_, voted_for_port_};
-  }
-
-  uint64_t current_term() {
-    slash::RWLock l(&stat_rw_, false);
-    return current_term_;
-  }
-
-  Role role() {
-    slash::RWLock l(&stat_rw_, false);
-    return role_;
-  }
-
-  std::string local_ip() {
-    return options_.local_ip;
-  }
-
-  int local_port() {
-    return options_.local_port;
-  }
-
-  uint64_t heartbeat_us() {
-    return options_.heartbeat_us;
-  }
-
-  uint64_t GetElectLeaderTimeout();
-
-  uint64_t append_entries_size_once() {
-    return options_.append_entries_size_once;
-  }
-  uint64_t append_entries_count_once() {
-    return options_.append_entries_count_once;
-  }
-  
+  void RecoverInit(RaftMeta *raft);
   void BecomeFollower(uint64_t new_iterm,
       const std::string leader_ip = "", int port = 0);
   void BecomeCandidate();
   void BecomeLeader();
-  bool VoteAndCheck(uint64_t vote_term);
-  bool RequestVote(uint64_t term,
-      const std::string ip, uint32_t port,
-      uint64_t log_index, uint64_t log_term,
-      uint64_t* my_term);
-  bool AppendEntries(uint64_t term,
-      uint64_t pre_log_term, uint64_t pre_log_index,
-      std::vector<Entry*>& entries, uint64_t* my_term);
 
-  /* Commit related */
-  uint64_t commit_index() {
-    slash::MutexLock l(&commit_mu_);
-    return commit_index_;
-  }
-  bool AdvanceCommitIndex(uint64_t commit_index);
-  
-  /* Apply related */
-  // Return false if timeout
-  Status WaitApply(uint64_t apply_index, uint32_t timeout);
-  
-  // commit index may be smaller than apply index,
-  // so we should check len first;
-  uint64_t NextApplyIndex(uint64_t* len);
-
-  uint64_t apply_index() {
-    slash::MutexLock lapply(&apply_mu_);
-    return apply_index_;
-  }
-
-  void ApplyDone(uint64_t index);
-  
- private:
-  Options options_;
-  Log* log_;
-  
-  // used to debug
-  Logger* info_log_;
-
+  Options options;
   // Role related
-  pthread_rwlock_t stat_rw_;
-  uint64_t current_term_;
-  Role role_;
-  std::string voted_for_ip_;
-  uint64_t voted_for_port_;
-  std::string leader_ip_;
-  uint64_t leader_port_;
-  uint64_t vote_quorum_;
+  uint64_t current_term;
 
-  // Commit related
-  slash::Mutex commit_mu_;
-  uint64_t commit_index_;
+  Role role;
+  std::string voted_for_ip;
+  int voted_for_port;
+  std::string leader_ip;
+  int leader_port;
+  uint32_t vote_quorum;
 
-  // Apply related
-  slash::Mutex apply_mu_;
-  slash::CondVar apply_cond_;
-  uint64_t apply_index_;
+  uint64_t commit_index;
+  std::atomic<uint64_t> last_applied;
+  uint64_t last_op_time;
 
-  void MetaApply();
+  // mutex protect commit_index
+  // used in floyd_apply thread and floyd_peer thread
+  slash::Mutex global_mu;
+  slash::Mutex apply_mu;
+  slash::CondVar apply_cond;
 };
 
 } // namespace floyd
-#endif
+#endif  // FLOYD_SRC_FLOYD_CONTEXT_H_
